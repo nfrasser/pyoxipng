@@ -74,7 +74,8 @@ Option | Description | Type | Default
 ## Development
 
 1. Install [Rust](https://www.rust-lang.org/tools/install)
-1. Install [Python 3](https://www.python.org/downloads/)
+1. Install [Python 3.7+](https://www.python.org/downloads/)
+1. Install [Pipenv](https://pipenv.pypa.io/en/latest/)
 1. Clone this repository and navigate to it via command line
    ```sh
    git clone https://github.com/nfrasser/pyoxipng.git
@@ -82,7 +83,11 @@ Option | Description | Type | Default
    ```
 1. Install dependencies
    ```sh
-   pip install -r requirements.txt
+   pipenv install --dev
+   ```
+1. Activate the dev environment
+   ```
+   pipenv shell
    ```
 1. Build
    ```sh
