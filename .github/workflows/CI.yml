@@ -12,17 +12,19 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.6', '3.7', '3.10']
     steps:
-    - uses: actions/checkout@v2
-    - uses: messense/maturin-action@v1
+    - uses: actions-rs/toolchain@v1
       with:
-        command: build
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions/checkout@v2
     - name: Install pipenv
       run: pipx install pipenv
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pipenv'
-    - run: pipenv install
+    - run: pipenv install --dev
     - run: pipenv run maturin develop
     - run: pipenv run pytest
 
