@@ -24,7 +24,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pipenv'
-    - run: pipenv install --dev
+    - name: pipenv install
+      run: pipenv install --dev --python ${{ matrix.python-version }}
     - run: pipenv run maturin develop
     - run: pipenv run pytest
 
