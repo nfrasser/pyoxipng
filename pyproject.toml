@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "pyoxipng"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Rust",
