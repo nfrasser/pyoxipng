@@ -5,8 +5,27 @@ on:
   pull_request:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: [ubuntu-latest, macos-latest, windows-latest]
+      python-version: ['3.6', '3.7', '3.10']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+    - uses: psf/black@stable
+    - uses: messense/maturin-action@v1
+      with:
+        command: develop
+    - run: pip install -r requirements.txt
+    - run: pytest
+
   linux:
     runs-on: ubuntu-latest
+    needs: test
     steps:
     - uses: actions/checkout@v2
     - uses: messense/maturin-action@v1
@@ -14,6 +33,7 @@ jobs:
         manylinux: auto
         command: build
         args: --release -o dist
+    - name:
     - name: Upload wheels
       uses: actions/upload-artifact@v2
       with:
@@ -22,6 +42,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
+    needs: test
     steps:
     - uses: actions/checkout@v2
     - uses: messense/maturin-action@v1
@@ -36,6 +57,7 @@ jobs:
 
   macos:
     runs-on: macos-latest
+    needs: test
     steps:
     - uses: actions/checkout@v2
     - uses: messense/maturin-action@v1
@@ -59,7 +81,7 @@ jobs:
           name: wheels
       - uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.10'
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
