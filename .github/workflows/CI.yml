@@ -13,15 +13,13 @@ jobs:
         python-version: ['3.6', '3.7', '3.10']
     steps:
     - uses: actions/checkout@v2
+    - uses: psf/black@stable
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-    - uses: psf/black@stable
-    - uses: messense/maturin-action@v1
-      with:
-        command: develop
     - run: pip install -r requirements.txt
+    - command: maturin develop
     - run: pytest
 
   linux:
