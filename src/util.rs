@@ -1,3 +1,4 @@
+use core::time::Duration;
 use std::string::String;
 use pyo3::prelude::*;
 use pyo3::exceptions::PyTypeError;
@@ -27,7 +28,17 @@ pub fn parse_kw_opts(kwds: Option<&PyDict>) -> PyResult<op::Options> {
 }
 
 pub fn parse_kw_opts_dict(kwops: &PyDict) -> PyResult<op::Options> {
-    let mut opts = op::Options::default();
+    let mut opts = if let Some(level) = kwops.get_item("level") {
+        let level: u8 = level.extract()
+            .or_else(|err| Err(PyTypeError::new_err(format!("Invalid optimization level; countered {}", err))))?;
+        if level > 6 {
+            return Err(PyTypeError::new_err(format!("Invalid optimization level; must be between 0 and 6 inclusive")))
+        }
+        op::Options::from_preset(level)
+    } else {
+        op::Options::default()
+    };
+
     for (k, v) in kwops.iter() {
         let key: &PyString = k.downcast()?;
         let key = key.to_str()?;
@@ -39,40 +50,48 @@ pub fn parse_kw_opts_dict(kwops: &PyDict) -> PyResult<op::Options> {
 
 fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()> {
     match key {
+        "level" => {}, // Handled elsewhere, ignore
         "backup" => opts.backup = value.downcast::<PyBool>()?.is_true(),
         "fix_errors" => opts.fix_errors = value.downcast::<PyBool>()?.is_true(),
         "pretend" => opts.pretend = value.downcast::<PyBool>()?.is_true(),
         "force" => opts.force = value.downcast::<PyBool>()?.is_true(),
         "preserve_attrs" => opts.preserve_attrs = value.downcast::<PyBool>()?.is_true(),
-        "filter" => opts.filter = py_to_index_set(value)?,
+        "filter" => opts.filter = py_iter_to_collection::<u8, op::IndexSet<u8>>(value)?,
         "interlace" => opts.interlace = py_option(value)?,
-        _ => return Err(PyTypeError::new_err("Unknown option"))
+        // "alphas" => panic!("Not supported yet!"),
+        "bit_depth_reduction" => opts.bit_depth_reduction = value.downcast::<PyBool>()?.is_true(),
+        "color_type_reduction" => opts.color_type_reduction = value.downcast::<PyBool>()?.is_true(),
+        "palette_reduction" => opts.palette_reduction = value.downcast::<PyBool>()?.is_true(),
+        "grayscale_reduction" => opts.grayscale_reduction = value.downcast::<PyBool>()?.is_true(),
+        "idat_recoding" => opts.idat_recoding = value.downcast::<PyBool>()?.is_true(),
+        // "strip" => panic!("Not supported yet!"),
+        // "deflate" => panic!("Not supported yet!"),
+        "use_heuristics" => opts.use_heuristics = value.downcast::<PyBool>()?.is_true(),
+        "timeout" => opts.timeout = py_duration(value)?,
+        _ => return Err(PyTypeError::new_err("Unsupported option"))
     }
     Ok(())
 }
 
-fn py_to_index_set<'a, T>(val: &'a PyAny) -> PyResult<op::IndexSet<T>>
-where T: Clone + Eq + std::hash::Hash + FromPyObject<'a> {
-    let mut index_set: op::IndexSet<T> = op::IndexSet::default();
+fn py_iter_to_collection<'a, T, C>(val: &'a PyAny) -> PyResult<C>
+where T: FromPyObject<'a>, C: Default + Extend<T> {
+    let mut collection = C::default();
     if let Ok(list) = val.downcast::<PyList>() {
-        index_set.reserve(list.len());
         for item in list.iter() {
-            index_set.insert(item.extract()?);
+            collection.extend([item.extract()?]);
         }
     } else if let Ok(set) = val.downcast::<PySet>() {
-        index_set.reserve(set.len());
         for item in set.iter() {
-            index_set.insert(item.extract()?);
+            collection.extend([item.extract()?]);
         }
     } else if let Ok(tuple) = val.downcast::<PyTuple>() {
-        index_set.reserve(tuple.len());
         for item in tuple.iter() {
-            index_set.insert(item.extract()?);
+            collection.extend([item.extract()?]);
         }
     } else {
         return Err(PyTypeError::new_err("Given value is not a list, set or tuple"))
     }
-    Ok(index_set)
+    Ok(collection)
 }
 
 fn py_option<'a, T>(val: &'a PyAny) -> PyResult<Option<T>>
@@ -81,5 +100,13 @@ where T: FromPyObject<'a> {
         Ok(None)
     } else {
         Ok(Some(val.extract()?))
+    }
+}
+
+fn py_duration(val: &PyAny) -> PyResult<Option<Duration>> {
+    if let Some(seconds) = py_option::<f64>(val)? {
+        Ok(Some(Duration::from_millis((seconds * 1000.) as u64)))
+    } else {
+        Ok(None)
     }
 }

@@ -2,19 +2,21 @@ use std::path::PathBuf;
 use pyo3::prelude::*;
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
-use pyo3::types::{PyString, PyDict, PyBytes};
+use pyo3::types::{PyDict, PyBytes};
 use oxipng as op;
 
 mod util;
 
 create_exception!(oxipng, PngError, PyException);
 
+/// Optimize the png file at the given input location. Optionally send it to the
+/// given output location.
 #[pyfunction(kwds="**")]
 #[pyo3(text_signature = "(input, output, **kwargs)")]
-fn optimize(input: &PyString, output: Option<&PyString>, kwds: Option<&PyDict>) -> PyResult<()> {
-    let inpath = PathBuf::from(input.to_str()?);
+fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyResult<()> {
+    let inpath = PathBuf::from(input.str()?.to_str()?);
     let outpath = if let Some(out) = output {
-        Some(PathBuf::from(out.to_str()?))
+        Some(PathBuf::from(out.str()?.to_str()?))
     } else {
         None
     };
