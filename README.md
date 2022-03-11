@@ -2,6 +2,7 @@ pyoxipng
 ===
 
 [![CI](https://github.com/nfrasser/pyoxipng/actions/workflows/CI.yml/badge.svg)](https://github.com/nfrasser/pyoxipng/actions/workflows/CI.yml)
+[![PyPI](https://badgen.net/pypi/v/pyoxipng)](https://pypi.org/project/pyoxipng/)
 
 Python wrapper for multithreaded .png image file optimizer
 [oxipng](https://github.com/shssoichiro/oxipng) (written in Rust). Use
