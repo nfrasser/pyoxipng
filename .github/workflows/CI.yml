@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -27,16 +29,15 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-python-${{ matrix.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Install pipenv
-      run: pipx install pipenv
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pipenv'
-    - name: pipenv install
-      run: pipenv install --dev --python ${{ matrix.python-version }}
-    - run: pipenv run maturin develop
-    - run: pipenv run pytest
+        cache: 'pip'
+    - name: pip install
+      run: pip install -U pip
+      run: pip install -e .[dev]
+    - run: maturin develop
+    - run: pytest
 
   linux:
     runs-on: ubuntu-latest
