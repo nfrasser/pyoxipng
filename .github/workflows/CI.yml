@@ -49,7 +49,7 @@ jobs:
     - name: maturin develop
       run: .venv/bin/maturin develop
       env:
-        VIRTUAL_ENV=".venv"
+        VIRTUAL_ENV: '.venv'
     - name: pytest
       run: .venv/bin/pytest
 
