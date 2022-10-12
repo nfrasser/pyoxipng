@@ -35,12 +35,12 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-python-${{ matrix.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Install pipenv
-      run: pipx install pipenv
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pipenv'
+    - name: Install pipenv
+      run: pipx install pipenv
     - name: pipenv install
       run: pipenv install --dev --python ${{ matrix.python-version }}
     - run: pipenv run maturin develop
