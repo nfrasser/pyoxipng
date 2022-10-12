@@ -43,12 +43,12 @@ jobs:
         cache-dependency-path: 'requirements-dev.txt'
     - name: activate env (unix)
       if: runner.os != 'windows'
-      run:
+      run: |
         python -m venv .venv
         source .venv/bin/activate
     - name: activate env (windows)
       if: runner.os == 'windows'
-      run:
+      run: |
         python -m venv .venv
         .venv\Scripts\activate.bat
     - name: pip install
