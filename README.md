@@ -106,7 +106,7 @@ provided by the `oxipng.Headers` class.
 
 Initialize the `deflate` option by instantiating one of the following classes:
 
-- `Zlib(compression: set[int] = {9}, strategies: set[int] = {0, 1, 2, 3}, window: int = 15)`
+- `Zlib(compression: list[int] = [9], strategies: list[int] = [0, 1, 2, 3], window: int = 15)`
   - `compression`: Which zlib compression levels to try on the file (1-9)
   - `strategies`: Which zlib compression strategies to try on the file (0-3)
   - `window`: Window size to use when compressing the file, as `2^window` bytes (8-15). Doesn't affect compression but may affect speed and memory usage
@@ -117,7 +117,7 @@ Initialize the `deflate` option by instantiating one of the following classes:
 Examples:
 
 ```py
-oxipng.optimize("in.png", "out.png", deflate=Zlib(compression={7, 8}, window=8))
+oxipng.optimize("in.png", "out.png", deflate=Zlib(compression=[7, 8], window=8))
 oxipng.optimize("in.png", "out.png", deflate=Zopfli(3))
 oxipng.optimize("in.png", "out.png", deflate=Libdeflater())
 ```
