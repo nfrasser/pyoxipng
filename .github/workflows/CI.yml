@@ -34,8 +34,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
     - name: pip install
-      run: pip install -U pip
-      run: pip install -e .[dev]
+      run: |
+        pip install -U pip
+        pip install -e .[dev]
     - run: maturin develop
     - run: pytest
 
