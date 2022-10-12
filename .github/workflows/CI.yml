@@ -2,15 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
-  release:
-    types: [published]
-
-concurrency:
-  group: ${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
 
 jobs:
   test:
@@ -33,32 +25,18 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-          .venv/
           target/
         key: ${{ runner.os }}-python-${{ matrix.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Install pipenv
+      run: pipx install pipenv
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        cache-dependency-path: 'requirements-dev.txt'
-    - name: activate env (unix)
-      if: runner.os != 'windows'
-      run: |
-        python -m venv .venv
-        source .venv/bin/activate
-    - name: activate env (windows)
-      if: runner.os == 'windows'
-      run: |
-        python -m venv .venv
-        .venv\Scripts\activate.bat
-    - name: pip install
-      run: |
-        pip install -U pip
-        pip install -r requirements-dev.txt
-    - name: maturin develop
-      run: maturin develop
-    - name: pytest
-      run: .venv/bin/pytest
+        cache: 'pipenv'
+    - name: pipenv install
+      run: pipenv install --dev --python ${{ matrix.python-version }}
+    - run: pipenv run maturin develop
+    - run: pipenv run pytest
 
   linux:
     runs-on: ubuntu-latest

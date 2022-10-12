@@ -1,6 +1,0 @@
-black
-maturin
-pytest
-atomicwrites
-importlib-metadata
-typing-extensions
