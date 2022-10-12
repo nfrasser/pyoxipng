@@ -33,19 +33,25 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
+          .venv/
           target/
         key: ${{ runner.os }}-python-${{ matrix.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-        cache-dependency-path: 'pyproject.toml'
+        cache-dependency-path: 'requirements-dev.txt'
     - name: pip install
       run: |
-        pip install -U pip
-        pip install -e .[dev]
-    - run: maturin develop
-    - run: pytest
+        python -m venv .venv
+        .venv/bin/pip install -U pip
+        .venv/bin/pip install -r requirements-dev.txt
+    - name: maturin develop
+      run: .venv/bin/maturin develop
+      env:
+        VIRTUAL_ENV=".venv"
+    - name: pytest
+      run: .venv/bin/pytest
 
   linux:
     runs-on: ubuntu-latest

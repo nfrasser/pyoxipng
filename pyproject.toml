@@ -26,13 +26,3 @@ homepage = "https://github.com/nfrasser/pyoxipng"
 documentation = "https://github.com/nfrasser/pyoxipng#readme"
 repository = "https://github.com/nfrasser/pyoxipng"
 changelog = "https://github.com/nfrasser/pyoxipng/blob/master/CHANGELOG.md"
-
-[project.optional-dependencies]
-dev = [
-    "black ",
-    "maturin",
-    "pytest",
-    "atomicwrites",
-    "importlib-metadata",
-    "typing-extensions",
-]

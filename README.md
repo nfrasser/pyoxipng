@@ -89,7 +89,7 @@ Option | Description | Type | Default
 1. Install dependencies
    ```sh
    pip install -U pip
-   pip install -e ".[dev]"
+   pip install requirements-dev.txt
    ```
 1. Build
    ```sh
