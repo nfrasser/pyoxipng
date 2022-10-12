@@ -2,14 +2,13 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyString};
 use std::collections::hash_map::DefaultHasher;
-use std::string::String;
 use std::hash::{Hash, Hasher};
-
+use std::string::String;
 
 use ::oxipng as op;
 use op::IndexSet;
 
-use crate::deflaters::{Zlib, Zopfli, Libdeflater};
+use crate::deflaters::{Libdeflater, Zlib, Zopfli};
 use crate::util::*;
 
 // Alpha optimization
@@ -155,10 +154,16 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "idat_recoding" => opts.idat_recoding = value.downcast::<PyBool>()?.is_true(),
         "strip" => opts.strip = value.extract::<Headers>()?.0,
         "deflate" => match value {
-            value if value.is_instance_of::<Zlib>()? => opts.deflate = value.extract::<Zlib>()?.into(),
-            value if value.is_instance_of::<Zopfli>()? => opts.deflate = value.extract::<Zopfli>()?.into(),
-            value if value.is_instance_of::<Libdeflater>()? => opts.deflate = value.extract::<Libdeflater>()?.into(),
-            _ => return Err(PyTypeError::new_err("Unsupported option"))
+            value if value.is_instance_of::<Zlib>()? => {
+                opts.deflate = value.extract::<Zlib>()?.into()
+            }
+            value if value.is_instance_of::<Zopfli>()? => {
+                opts.deflate = value.extract::<Zopfli>()?.into()
+            }
+            value if value.is_instance_of::<Libdeflater>()? => {
+                opts.deflate = value.extract::<Libdeflater>()?.into()
+            }
+            _ => return Err(PyTypeError::new_err("Unsupported option")),
         },
         "use_heuristics" => opts.use_heuristics = value.downcast::<PyBool>()?.is_true(),
         "timeout" => opts.timeout = py_duration(value)?,

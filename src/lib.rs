@@ -1,19 +1,19 @@
-use std::path::PathBuf;
-use pyo3::prelude::*;
+use ::oxipng as op;
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
-use pyo3::types::{PyDict, PyBytes};
-use ::oxipng as op;
+use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyDict};
+use std::path::PathBuf;
 
-mod util;
 mod deflaters;
 mod parse;
+mod util;
 
 create_exception!(oxipng, PngError, PyException);
 
 /// Optimize the png file at the given input location. Optionally send it to the
 /// given output location.
-#[pyfunction(kwds="**")]
+#[pyfunction(kwds = "**")]
 #[pyo3(text_signature = "(input, output, **kwargs)")]
 fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyResult<()> {
     let inpath = PathBuf::from(input.str()?.to_str()?);
@@ -31,7 +31,7 @@ fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyR
     Ok(())
 }
 
-#[pyfunction(kwds="**")]
+#[pyfunction(kwds = "**")]
 #[pyo3(text_signature = "(data, **kwargs)")]
 fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
     let output = op::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwds)?)
@@ -41,7 +41,6 @@ fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<Py
         Ok(bytes)
     })
 }
-
 
 /// A Python module implemented in Rust.
 #[pymodule]

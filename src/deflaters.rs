@@ -30,7 +30,11 @@ pub struct Libdeflater();
 impl Zlib {
     #[new]
     #[args(compression = "None", strategies = "None", window = "None")]
-    fn new(compression: Option<Vec<u8>>, strategies: Option<Vec<u8>>, window: Option<u8>) -> PyResult<Self> {
+    fn new(
+        compression: Option<Vec<u8>>,
+        strategies: Option<Vec<u8>>,
+        window: Option<u8>,
+    ) -> PyResult<Self> {
         Ok(Self {
             compression: if let Some(compression) = compression {
                 let mut set = IndexSet::default();

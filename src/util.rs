@@ -1,7 +1,7 @@
+use core::time::Duration;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PySet, PyTuple};
-use core::time::Duration;
 
 // impl<'source, T> FromPyObject<'source> for Vec<T> where T: FromPyObject<'source> {
 //     fn extract(ob: &'source PyAny) -> PyResult<Self> {
