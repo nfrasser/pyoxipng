@@ -3,9 +3,11 @@ use pyo3::prelude::*;
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
 use pyo3::types::{PyDict, PyBytes};
-use oxipng as op;
+use ::oxipng as op;
 
 mod util;
+mod deflaters;
+mod parse;
 
 create_exception!(oxipng, PngError, PyException);
 
@@ -24,16 +26,16 @@ fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyR
     let inpath = op::InFile::Path(inpath);
     let outpath = op::OutFile::Path(outpath);
 
-    op::optimize(&inpath, &outpath, &util::parse_kw_opts(kwds)?)
-        .or_else(|err| Err(PngError::new_err(util::png_error_to_string(&err))))?;
+    op::optimize(&inpath, &outpath, &parse::parse_kw_opts(kwds)?)
+        .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
     Ok(())
 }
 
 #[pyfunction(kwds="**")]
 #[pyo3(text_signature = "(data, **kwargs)")]
 fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
-    let output = op::optimize_from_memory(data.as_bytes(), &util::parse_kw_opts(kwds)?)
-        .or_else(|err| Err(PngError::new_err(util::png_error_to_string(&err))))?;
+    let output = op::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwds)?)
+        .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
     Python::with_gil(|py| {
         let bytes: Py<PyBytes> = PyBytes::new(py, &*output).into();
         Ok(bytes)
@@ -45,6 +47,11 @@ fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<Py
 #[pymodule]
 fn oxipng(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PngError", py.get_type::<PngError>())?;
+    m.add_class::<deflaters::Zlib>()?;
+    m.add_class::<deflaters::Zopfli>()?;
+    m.add_class::<deflaters::Libdeflater>()?;
+    m.add_class::<parse::AlphaOptim>()?;
+    m.add_class::<parse::Headers>()?;
     m.add_function(wrap_pyfunction!(optimize, m)?)?;
     m.add_function(wrap_pyfunction!(optimize_from_memory, m)?)?;
     Ok(())
