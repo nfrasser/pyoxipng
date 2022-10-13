@@ -8,7 +8,7 @@ requires-python = ">=3.7"
 version = "6.0.0"
 description = "Python wrapper for multithreaded .png image file optimizer oxipng"
 readme = "README.md"
-license = { file = "MIT" }
+license = { file = "LICENSE" }
 keywords = ["rust", "image", "optimize", "optimizer", "optimization", "compress", "png"]
 authors = [
   {name = "Nick Frasser <nick@nfrasser.com>"}
