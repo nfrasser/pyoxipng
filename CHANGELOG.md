@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.0.0
+
+* Add missing alphas, strip and deflate options
+
 ## 5.0.0
 
 * Sync version with oxipng major releases

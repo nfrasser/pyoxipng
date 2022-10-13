@@ -59,10 +59,13 @@ def test_optimize_opts(infile, bakfile):
         preserve_attrs=True,
         filter={1, 2, 3},
         interlace=1,
+        alphas={oxipng.AlphaOptim.White},
         bit_depth_reduction=False,
         palette_reduction=False,
         grayscale_reduction=False,
         idat_recoding=False,
+        strip=oxipng.Headers.strip(["foo", "bar"]),
+        deflate=oxipng.Libdeflater(),
         use_heuristics=False,
         timeout=100,
     )
@@ -88,3 +91,24 @@ def test_raises_pngerror():
 def test_raises_typeerror(indata):
     with pytest.raises(TypeError):
         oxipng.optimize_from_memory(indata, filter={1: 2})  # type: ignore
+
+
+def test_deflate_zlib():
+    assert oxipng.Zlib()
+    assert oxipng.Zlib([7, 8], [2, 3])
+    assert oxipng.Zlib(compression=[7, 8], strategies=[2, 3], window=8)
+
+    with pytest.raises(OverflowError):
+        oxipng.Zlib([1000])
+
+
+def test_deflate_zopfli():
+    assert oxipng.Zopfli(1)
+    assert oxipng.Zopfli(42)
+    assert oxipng.Zopfli(255)
+
+    with pytest.raises(TypeError):
+        oxipng.Zopfli(0)
+
+    with pytest.raises(OverflowError):
+        oxipng.Zopfli(256)

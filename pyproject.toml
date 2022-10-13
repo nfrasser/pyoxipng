@@ -5,13 +5,13 @@ build-backend = "maturin"
 [project]
 name = "pyoxipng"
 requires-python = ">=3.7"
-version = "5.0.0"
+version = "6.0.0"
 description = "Python wrapper for multithreaded .png image file optimizer oxipng"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 keywords = ["rust", "image", "optimize", "optimizer", "optimization", "compress", "png"]
 authors = [
-  {name = "Nick Frasser"}
+  {name = "Nick Frasser <nick@nfrasser.com>"}
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
