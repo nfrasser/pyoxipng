@@ -7,6 +7,17 @@ Python wrapper for multithreaded .png image file optimizer
 [oxipng](https://github.com/shssoichiro/oxipng) (written in Rust). Use
 `pyoxipng` to reduce the file size of your PNG images.
 
+Jump to a section
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Options](#options)
+  - [alphas](#alphas)
+  - [strip](#strip)
+  - [deflate](#deflate)
+- [Development](#development)
+- [License](#license)
+
 ## Installation
 
 Install from PyPI:
@@ -117,9 +128,9 @@ Initialize the `deflate` option by instantiating one of the following classes:
 Examples:
 
 ```py
-oxipng.optimize("in.png", "out.png", deflate=Zlib(compression=[7, 8], window=8))
-oxipng.optimize("in.png", "out.png", deflate=Zopfli(3))
-oxipng.optimize("in.png", "out.png", deflate=Libdeflater())
+oxipng.optimize("in.png", deflate=Zlib(compression=[7, 8], window=8))
+oxipng.optimize("in.png", deflate=Zopfli(3))
+oxipng.optimize("in.png", deflate=Libdeflater())
 ```
 
 ## Development
