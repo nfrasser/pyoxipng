@@ -35,12 +35,13 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-python-${{ matrix.python-version }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Install pipenv
-      run: pipx install pipenv
-    - uses: actions/setup-python@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pipenv'
+        cache: 'pip'
+        cache-dependency-path: 'Pipfile.lock'
+    - name: pip install pipenv
+      run: pip install -U pip pipenv
     - name: pipenv install
       run: pipenv install --dev --python ${{ matrix.python-version }}
     - run: pipenv run maturin develop
@@ -101,7 +102,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: wheels
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
       - name: Publish to PyPI
