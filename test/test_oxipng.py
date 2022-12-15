@@ -65,7 +65,7 @@ def test_optimize_opts(infile, bakfile):
         grayscale_reduction=False,
         idat_recoding=False,
         strip=oxipng.Headers.strip(["foo", "bar"]),
-        deflate=oxipng.Libdeflater(),
+        deflate=oxipng.Libdeflater(2),
         timeout=100,
     )
     assert bakfile.exists()

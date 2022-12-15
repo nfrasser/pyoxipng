@@ -37,8 +37,8 @@ impl Zopfli {
 #[pymethods]
 impl Libdeflater {
     #[new]
-    fn new() -> Self {
-        Self{compression: 2}
+    fn new(in_compression: u8) -> Self {
+        Self{compression: in_compression}
     }
 }
 
