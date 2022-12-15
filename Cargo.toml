@@ -11,4 +11,3 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.17.2", features = ["extension-module"] }
 oxipng = { version = "7.0.*" }
-cpython = { version = "0.7" }
