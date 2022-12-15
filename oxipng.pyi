@@ -20,6 +20,18 @@ class AlphaOptim(Enum):
     Down = ...
     Left = ...
 
+class RowFilter(Enum):
+    None = ...
+    Sub = ...
+    Up = ...
+    Average = ...
+    Paeth = ...
+    MinSum = ...
+    Entropy = ...
+    Bigrams = ...
+    BigEnt = ...
+    Brute = ...
+
 class Headers:
     @staticmethod
     def none() -> "Headers": ...
@@ -31,18 +43,6 @@ class Headers:
     def keep(val: List[str]) -> "Headers": ...
     @staticmethod
     def all() -> "Headers": ...
-
-class Zlib:
-    """
-    Initialize a Zlib deflate configuration option value
-    """
-
-    def __init__(
-        self,
-        compression: List[int] = [9],
-        strategies: List[int] = [0, 1, 2, 3],
-        window: int = 15,
-    ) -> None: ...
 
 class Zopfli:
     """
@@ -67,7 +67,7 @@ def optimize(
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
-    filter: Set[int] = {0, 5},
+    filter: Set[RowFilter] = {Rowfilter.None},
     interlace: Optional[int] = None,
     alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
     bit_depth_reduction: bool = True,
@@ -76,7 +76,7 @@ def optimize(
     grayscale_reduction: bool = True,
     idat_recoding: bool = True,
     strip: Headers = Headers.none(),
-    deflate: Union[Zlib, Zopfli, Libdeflater] = Zlib(),
+    deflate: Union[Zopfli, Libdeflater] = Libdeflater(),
     use_heuristics: bool = False,
     timeout: Optional[int] = None,
 ) -> None: ...
@@ -88,7 +88,7 @@ def optimize_from_memory(
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
-    filter: Set[int] = {0, 5},
+    filter: Set[RowFilter] = {Rowfilter.None},
     interlace: Optional[int] = None,
     alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
     bit_depth_reduction: bool = True,
@@ -97,7 +97,7 @@ def optimize_from_memory(
     grayscale_reduction: bool = True,
     idat_recoding: bool = True,
     strip: Headers = Headers.none(),
-    deflate: Union[Zlib, Zopfli, Libdeflater] = Zlib(),
+    deflate: Union[Zopfli, Libdeflater] = Libdeflater(),
     use_heuristics: bool = False,
     timeout: Optional[int] = None,
 ) -> bytes: ...

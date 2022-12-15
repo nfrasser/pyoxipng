@@ -46,9 +46,9 @@ fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<Py
 #[pymodule]
 fn oxipng(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PngError", py.get_type::<PngError>())?;
-    m.add_class::<deflaters::Zlib>()?;
     m.add_class::<deflaters::Zopfli>()?;
     m.add_class::<deflaters::Libdeflater>()?;
+    m.add_class::<parse::RowFilter>()?;
     m.add_class::<parse::AlphaOptim>()?;
     m.add_class::<parse::Headers>()?;
     m.add_function(wrap_pyfunction!(optimize, m)?)?;

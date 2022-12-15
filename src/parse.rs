@@ -8,7 +8,7 @@ use std::string::String;
 use ::oxipng as op;
 use op::IndexSet;
 
-use crate::deflaters::{Libdeflater, Zlib, Zopfli};
+use crate::deflaters::{Libdeflater, Zopfli};
 use crate::util::*;
 
 // Alpha optimization
@@ -28,7 +28,7 @@ pub enum AlphaOptim {
 impl AlphaOptim {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
-        (*self as u64).hash(&mut hasher);
+        (self.clone() as u64).hash(&mut hasher);
         hasher.finish()
     }
 }
@@ -46,6 +46,49 @@ impl From<AlphaOptim> for op::AlphaOptim {
         }
     }
 }
+
+// Filter
+#[pyclass]
+#[derive(Clone, Debug)]
+pub enum RowFilter {
+    None = op::RowFilter::None as isize,
+    Sub = op::RowFilter::Sub as isize,
+    Up = op::RowFilter::Up as isize,
+    Average = op::RowFilter::Average as isize,
+    Paeth = op::RowFilter::Paeth as isize,
+    MinSum = op::RowFilter::MinSum as isize,
+    Entropy = op::RowFilter::Entropy as isize,
+    Bigrams = op::RowFilter::Bigrams as isize,
+    BigEnt = op::RowFilter::BigEnt as isize,
+    Brute = op::RowFilter::Brute as isize
+}
+
+#[pymethods]
+impl RowFilter {
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        (self.clone() as u64).hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+impl From<RowFilter> for op::RowFilter {
+    fn from(val: RowFilter) -> Self {
+        match val {
+            RowFilter::None => Self::None,
+            RowFilter::Sub => Self::Sub,
+            RowFilter::Up => Self::Up,
+            RowFilter::Average => Self::Average,
+            RowFilter::Paeth => Self::Paeth,
+            RowFilter::MinSum => Self::MinSum,
+            RowFilter::Entropy => Self::Entropy,
+            RowFilter::Bigrams => Self::Bigrams,
+            RowFilter::BigEnt => Self::BigEnt,
+            RowFilter::Brute => Self::Brute,
+        }
+    }
+}
+
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -141,8 +184,12 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "pretend" => opts.pretend = value.downcast::<PyBool>()?.is_true(),
         "force" => opts.force = value.downcast::<PyBool>()?.is_true(),
         "preserve_attrs" => opts.preserve_attrs = value.downcast::<PyBool>()?.is_true(),
-        "filter" => opts.filter = py_iter_extract::<u8, IndexSet<u8>>(value)?,
+        "filter" => {
+            opts.filter = 
+                py_iter_extract_map::<RowFilter, op::RowFilter, IndexSet<op::RowFilter>>(value)?
+        }
         "interlace" => opts.interlace = py_option(value)?,
+        //"optimize_alpha" => opts.optimize_alpha = value.downcast::<PyBool>()?.is_true(),
         "alphas" => {
             opts.alphas =
                 py_iter_extract_map::<AlphaOptim, op::AlphaOptim, IndexSet<op::AlphaOptim>>(value)?
@@ -154,9 +201,6 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "idat_recoding" => opts.idat_recoding = value.downcast::<PyBool>()?.is_true(),
         "strip" => opts.strip = value.extract::<Headers>()?.0,
         "deflate" => match value {
-            value if value.is_instance_of::<Zlib>()? => {
-                opts.deflate = value.extract::<Zlib>()?.into()
-            }
             value if value.is_instance_of::<Zopfli>()? => {
                 opts.deflate = value.extract::<Zopfli>()?.into()
             }
@@ -165,7 +209,6 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
             }
             _ => return Err(PyTypeError::new_err("Unsupported option")),
         },
-        "use_heuristics" => opts.use_heuristics = value.downcast::<PyBool>()?.is_true(),
         "timeout" => opts.timeout = py_duration(value)?,
         _ => return Err(PyTypeError::new_err("Unsupported option")),
     }
