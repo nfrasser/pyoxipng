@@ -65,7 +65,7 @@ def test_optimize_opts(infile, bakfile):
         grayscale_reduction=False,
         idat_recoding=False,
         strip=oxipng.Headers.strip(["foo", "bar"]),
-        deflate=oxipng.Libdeflater(2),
+        deflate=oxipng.Deflaters.libdeflater(12),
         timeout=100,
     )
     assert bakfile.exists()
@@ -93,12 +93,12 @@ def test_raises_typeerror(indata):
 
 
 def test_deflate_zopfli():
-    assert oxipng.Zopfli(1)
-    assert oxipng.Zopfli(42)
-    assert oxipng.Zopfli(255)
+    assert oxipng.Deflaters.zopfli(1)
+    assert oxipng.Deflaters.zopfli(42)
+    assert oxipng.Deflaters.zopfli(255)
 
     with pytest.raises(TypeError):
-        oxipng.Zopfli(0)
+        oxipng.Deflaters.zopfli(0)
 
     with pytest.raises(OverflowError):
-        oxipng.Zopfli(256)
+        oxipng.Deflaters.zopfli(256)

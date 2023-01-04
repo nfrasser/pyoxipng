@@ -5,7 +5,6 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBytes, PyDict};
 use std::path::PathBuf;
 
-mod deflaters;
 mod parse;
 mod util;
 
@@ -46,11 +45,10 @@ fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<Py
 #[pymodule]
 fn oxipng(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PngError", py.get_type::<PngError>())?;
-    m.add_class::<deflaters::Zopfli>()?;
-    m.add_class::<deflaters::Libdeflater>()?;
-    m.add_class::<parse::RowFilter>()?;
     m.add_class::<parse::AlphaOptim>()?;
+    m.add_class::<parse::RowFilter>()?;
     m.add_class::<parse::Headers>()?;
+    m.add_class::<parse::Deflaters>()?;
     m.add_function(wrap_pyfunction!(optimize, m)?)?;
     m.add_function(wrap_pyfunction!(optimize_from_memory, m)?)?;
     Ok(())

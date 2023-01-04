@@ -67,26 +67,26 @@ Example usage:
 oxipng.optimize("/path/to/image.png", level=6, backup=True, interlace=1)
 ```
 
-| Option                 | Description                                                                                                                                 | Type                            | Default             |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------- |
-| `level`                | Set the optimization level to an integer between 0 and 6 (inclusive)                                                                        | `int`                           | `2`                 |
-| `backup`               | Whether the input file should be backed up before writing the output                                                                        | `bool`                          | `False`             |
-| `fix_errors`           | Attempt to fix errors when decoding the input file rather than throwing `PngError`                                                          | `bool`                          | `False`             |
-| `pretend`              | Don't actually write any output file, just calculate the best results                                                                       | `bool`                          | `False`             |
-| `force`                | Write to output even if there was no improvement in compression                                                                             | `bool`                          | `False`             |
-| `preserve_attrs`       | Ensure the output file has the same permissions as the input file                                                                           | `bool`                          | `False`             |
-| `filter`               | Which filters to try on the file. Use Use enum values from `oxipng.RowFilter`                                                               | `set=[RowFilter.None]`          | `{RowFilter.None}`  |
-| `interlace`            | Whether to change the interlacing type of the file. `0` means disable interlacing. `1` means enable it. `None` means leave as is.           | `int \| None`                   | `None`              |
-| `alphas`               | Alpha filtering strategies to use. Use enum values from `oxipng.AlphaOptim`                                                                 | `set[AlphaOptim]`               | `{AlphaOptim.NoOp}` |
-| `bit_depth_reduction`  | Whether to attempt bit depth reduction                                                                                                      | `bool`                          | `True`              |
-| `color_type_reduction` | Whether to attempt color type reduction                                                                                                     | `bool`                          | `True`              |
-| `palette_reduction`    | Whether to attempt palette reduction                                                                                                        | `bool`                          | `True`              |
-| `grayscale_reduction`  | Whether to attempt grayscale reduction                                                                                                      | `bool`                          | `True`              |
-| `idat_recoding`        | If any type of reduction is performed, IDAT recoding will be performed regardless of this setting                                           | `bool`                          | `True`              |
-| `strip`                | Which headers to strip from the PNG file, if any. Specify with `oxipng.Headers`                                                             | `Headers`                       | `Headers.none()`    |
-| `deflate`              | Which DEFLATE algorithm to use. Specify an instance of  `oxipng.Libdeflater` or `oxipng.Zopfli`                                             | `Libdeflater \| Zopfli`         | `Libdeflater()`     |
-| `use_heuristics`       | Whether to use heuristics to pick the best filter and compression. Intended for use with `level=1`                                          | `bool`                          | `False`             |
-| `timeout`              | Maximum amount of time to spend (in milliseconds) on optimizations. Further potential optimizations are skipped if the timeout is exceeded. | `int \| None`                   | `None`              |
+| Option                 | Description                                                                                                                                | Type                   | Default                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ------------------------- |
+| `level`                | Set the optimization level to an integer between 0 and 6 (inclusive)                                                                       | `int`                  | `2`                       |
+| `backup`               | Whether the input file should be backed up before writing the output                                                                       | `bool`                 | `False`                   |
+| `fix_errors`           | Attempt to fix errors when decoding the input file rather than throwing `PngError`                                                         | `bool`                 | `False`                   |
+| `pretend`              | Don't actually write any output file, just calculate the best results                                                                      | `bool`                 | `False`                   |
+| `force`                | Write to output even if there was no improvement in compression                                                                            | `bool`                 | `False`                   |
+| `preserve_attrs`       | Ensure the output file has the same permissions as the input file                                                                          | `bool`                 | `False`                   |
+| `filter`               | Which filters to try on the file. Use Use enum values from `oxipng.RowFilter`                                                              | `set=[RowFilter.NoOp]` | `{RowFilter.NoOp}`        |
+| `interlace`            | Whether to change the interlacing type of the file. `0` means disable interlacing. `1` means enable it. `None` means leave as is           | `int \| None`          | `None`                    |
+| `alphas`               | Alpha filtering strategies to use. Use enum values from `oxipng.AlphaOptim`                                                                | `set[AlphaOptim]`      | `{AlphaOptim.NoOp}`       |
+| `bit_depth_reduction`  | Whether to attempt bit depth reduction                                                                                                     | `bool`                 | `True`                    |
+| `color_type_reduction` | Whether to attempt color type reduction                                                                                                    | `bool`                 | `True`                    |
+| `palette_reduction`    | Whether to attempt palette reduction                                                                                                       | `bool`                 | `True`                    |
+| `grayscale_reduction`  | Whether to attempt grayscale reduction                                                                                                     | `bool`                 | `True`                    |
+| `idat_recoding`        | If any type of reduction is performed, IDAT recoding will be performed regardless of this setting                                          | `bool`                 | `True`                    |
+| `strip`                | Which headers to strip from the PNG file, if any. Specify with `oxipng.Headers`                                                            | `Headers`              | `Headers.none()`          |
+| `deflate`              | Which DEFLATE algorithm to use. Specify with `oxipng.Deflaters`                                                                            | `Deflaters`            | `Deflaters.libdeflater()` |
+| `use_heuristics`       | Whether to use heuristics to pick the best filter and compression. Intended for use with `level=1`                                         | `bool`                 | `False`                   |
+| `timeout`              | Maximum amount of time to spend (in milliseconds) on optimizations. Further potential optimizations are skipped if the timeout is exceeded | `int \| None`          | `None`                    |
 
 ### alphas
 
@@ -104,7 +104,7 @@ Initialize the `alphas` set with any of the following enum options:
 
 Initialize the `filter` set with any of the following enum options:
 
-- `oxipng.RowFilter.None`
+- `oxipng.RowFilter.NoOp`
 - `oxipng.RowFilter.Sub`
 - `oxipng.RowFilter.Up`
 - `oxipng.RowFilter.Average`
@@ -115,8 +115,8 @@ Initialize the `filter` set with any of the following enum options:
 
 ### strip
 
-Initialize the `strip` option by calling one of the following static methods
-provided by the `oxipng.Headers` class.
+Initialize the `strip` option with one of the following static methods in the
+`oxipng.Headers` class.
 
 | Method                            | Description                                                                                        |
 | --------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -128,18 +128,13 @@ provided by the `oxipng.Headers` class.
 
 ### deflate
 
-Initialize the `deflate` option by instantiating one of the following classes:
-- `Libdeflater(compression: int)`
-   - `compression`: compression level [1-12]
-- `Zopfli(iterations: int)`
-   - `iterations`: The number of compression iterations to do.
+Initialize the `deflate` option with one of the following static methods in the
+`oxipng.Deflaters` class.
 
-Examples:
-
-```py
-oxipng.optimize("in.png", deflate=Libdeflater(2))
-oxipng.optimize("in.png", deflate=Zopfli(3))
-```
+| Method                              | Description                                                 |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `oxipng.Deflaters.libdeflater(int)` | Libdeflater with compression level [0-12]                   |
+| `oxipng.Deflaters.zopfli(int)`      | Zopfli with number of compression iterations to do [1-255]. |
 
 ## Development
 

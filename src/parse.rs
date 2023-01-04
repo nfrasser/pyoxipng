@@ -3,12 +3,12 @@ use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyString};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::num::NonZeroU8;
 use std::string::String;
 
 use ::oxipng as op;
 use op::IndexSet;
 
-use crate::deflaters::{Libdeflater, Zopfli};
 use crate::util::*;
 
 // Alpha optimization
@@ -51,7 +51,7 @@ impl From<AlphaOptim> for op::AlphaOptim {
 #[pyclass]
 #[derive(Clone, Debug)]
 pub enum RowFilter {
-    None = op::RowFilter::None as isize,
+    NoOp = op::RowFilter::None as isize,
     Sub = op::RowFilter::Sub as isize,
     Up = op::RowFilter::Up as isize,
     Average = op::RowFilter::Average as isize,
@@ -60,7 +60,7 @@ pub enum RowFilter {
     Entropy = op::RowFilter::Entropy as isize,
     Bigrams = op::RowFilter::Bigrams as isize,
     BigEnt = op::RowFilter::BigEnt as isize,
-    Brute = op::RowFilter::Brute as isize
+    Brute = op::RowFilter::Brute as isize,
 }
 
 #[pymethods]
@@ -75,7 +75,7 @@ impl RowFilter {
 impl From<RowFilter> for op::RowFilter {
     fn from(val: RowFilter) -> Self {
         match val {
-            RowFilter::None => Self::None,
+            RowFilter::NoOp => Self::None,
             RowFilter::Sub => Self::Sub,
             RowFilter::Up => Self::Up,
             RowFilter::Average => Self::Average,
@@ -88,7 +88,6 @@ impl From<RowFilter> for op::RowFilter {
         }
     }
 }
-
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -120,6 +119,30 @@ impl Headers {
     #[staticmethod]
     fn all() -> Self {
         Self(op::Headers::All)
+    }
+}
+
+#[pyclass]
+#[derive(Debug, Clone)]
+pub struct Deflaters(pub op::Deflaters);
+
+#[pymethods]
+impl Deflaters {
+    #[staticmethod]
+    fn libdeflater(compression: u8) -> Self {
+        Self(op::Deflaters::Libdeflater { compression })
+    }
+
+    #[staticmethod]
+    fn zopfli(iterations: u8) -> PyResult<Self> {
+        if let Some(iterations) = NonZeroU8::new(iterations) {
+            Ok(Self(op::Deflaters::Zopfli { iterations }))
+        } else {
+            Err(PyTypeError::new_err(format!(
+                "Invalid zopfli iterations {}; must be in range [1, 255]",
+                iterations
+            )))
+        }
     }
 }
 
@@ -185,11 +208,10 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "force" => opts.force = value.downcast::<PyBool>()?.is_true(),
         "preserve_attrs" => opts.preserve_attrs = value.downcast::<PyBool>()?.is_true(),
         "filter" => {
-            opts.filter = 
+            opts.filter =
                 py_iter_extract_map::<RowFilter, op::RowFilter, IndexSet<op::RowFilter>>(value)?
         }
         "interlace" => opts.interlace = py_option(value)?,
-        //"optimize_alpha" => opts.optimize_alpha = value.downcast::<PyBool>()?.is_true(),
         "alphas" => {
             opts.alphas =
                 py_iter_extract_map::<AlphaOptim, op::AlphaOptim, IndexSet<op::AlphaOptim>>(value)?
@@ -200,15 +222,8 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "grayscale_reduction" => opts.grayscale_reduction = value.downcast::<PyBool>()?.is_true(),
         "idat_recoding" => opts.idat_recoding = value.downcast::<PyBool>()?.is_true(),
         "strip" => opts.strip = value.extract::<Headers>()?.0,
-        "deflate" => match value {
-            value if value.is_instance_of::<Zopfli>()? => {
-                opts.deflate = value.extract::<Zopfli>()?.into()
-            }
-            value if value.is_instance_of::<Libdeflater>()? => {
-                opts.deflate = value.extract::<Libdeflater>()?.into()
-            }
-            _ => return Err(PyTypeError::new_err("Unsupported option")),
-        },
+        "deflate" => opts.deflate = value.extract::<Deflaters>()?.0,
+        "fast_evaluation" => opts.fast_evaluation = value.downcast::<PyBool>()?.is_true(),
         "timeout" => opts.timeout = py_duration(value)?,
         _ => return Err(PyTypeError::new_err("Unsupported option")),
     }
