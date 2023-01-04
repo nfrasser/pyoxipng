@@ -72,12 +72,13 @@ oxipng.optimize("/path/to/image.png", level=6, backup=True, interlace=1)
 | `level`                | Set the optimization level to an integer between 0 and 6 (inclusive)                                                                       | `int`                  | `2`                       |
 | `backup`               | Whether the input file should be backed up before writing the output                                                                       | `bool`                 | `False`                   |
 | `fix_errors`           | Attempt to fix errors when decoding the input file rather than throwing `PngError`                                                         | `bool`                 | `False`                   |
+| `check`                | Don't actually run any optimizations, just parse the PNG file                                                                              | `bool`                 | `False`                   |
 | `pretend`              | Don't actually write any output file, just calculate the best results                                                                      | `bool`                 | `False`                   |
 | `force`                | Write to output even if there was no improvement in compression                                                                            | `bool`                 | `False`                   |
 | `preserve_attrs`       | Ensure the output file has the same permissions as the input file                                                                          | `bool`                 | `False`                   |
 | `filter`               | Which filters to try on the file. Use Use enum values from `oxipng.RowFilter`                                                              | `set=[RowFilter.NoOp]` | `{RowFilter.NoOp}`        |
-| `interlace`            | Whether to change the interlacing type of the file. `0` means disable interlacing. `1` means enable it. `None` means leave as is           | `int \| None`          | `None`                    |
-| `alphas`               | Alpha filtering strategies to use. Use enum values from `oxipng.AlphaOptim`                                                                | `set[AlphaOptim]`      | `{AlphaOptim.NoOp}`       |
+| `interlace`            | Whether to change the interlacing type of the file. `None` will not change current interlacing type                                        | `Interlacing \| None`  | `None`                    |
+| `optimize_alpha`       | Whether to allow transparent pixels to be altered to improve compression                                                                   | `bool`                 | `False`                   |
 | `bit_depth_reduction`  | Whether to attempt bit depth reduction                                                                                                     | `bool`                 | `True`                    |
 | `color_type_reduction` | Whether to attempt color type reduction                                                                                                    | `bool`                 | `True`                    |
 | `palette_reduction`    | Whether to attempt palette reduction                                                                                                       | `bool`                 | `True`                    |
@@ -87,18 +88,6 @@ oxipng.optimize("/path/to/image.png", level=6, backup=True, interlace=1)
 | `deflate`              | Which DEFLATE algorithm to use. Specify with `oxipng.Deflaters`                                                                            | `Deflaters`            | `Deflaters.libdeflater()` |
 | `use_heuristics`       | Whether to use heuristics to pick the best filter and compression. Intended for use with `level=1`                                         | `bool`                 | `False`                   |
 | `timeout`              | Maximum amount of time to spend (in milliseconds) on optimizations. Further potential optimizations are skipped if the timeout is exceeded | `int \| None`          | `None`                    |
-
-### alphas
-
-Initialize the `alphas` set with any of the following enum options:
-
-- `oxipng.AlphaOptim.NoOp`
-- `oxipng.AlphaOptim.Black`
-- `oxipng.AlphaOptim.White`
-- `oxipng.AlphaOptim.Up`
-- `oxipng.AlphaOptim.Right`
-- `oxipng.AlphaOptim.Down`
-- `oxipng.AlphaOptim.Left`
 
 ### filter
 
@@ -112,6 +101,14 @@ Initialize the `filter` set with any of the following enum options:
 - `oxipng.RowFilter.Bigrams`
 - `oxipng.RowFilter.BigEnt`
 - `oxipng.RowFilter.Brute`
+
+### interlace
+
+Set `interlace` to `None` to keep existing interlacing or to one of following
+enum options:
+
+- `oxipng.Interlacing.Off` (interlace disabled)
+- `oxipng.Interlacing.Adam7` (interlace enabled)
 
 ### strip
 

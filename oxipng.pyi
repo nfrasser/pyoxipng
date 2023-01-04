@@ -11,15 +11,6 @@ StrOrBytesPath = Union[str, bytes, Path]
 
 class PngError(Exception): ...
 
-class AlphaOptim(Enum):
-    NoOp = ...
-    Black = ...
-    White = ...
-    Up = ...
-    Right = ...
-    Down = ...
-    Left = ...
-
 class RowFilter(Enum):
     NoOp = ...
     Sub = ...
@@ -31,6 +22,10 @@ class RowFilter(Enum):
     Bigrams = ...
     BigEnt = ...
     Brute = ...
+
+class Interlacing(Enum):
+    Off = ...
+    Adam7 = ...
 
 class Headers:
     @staticmethod
@@ -70,12 +65,13 @@ def optimize(
     level: int = 2,
     backup: bool = False,
     fix_errors: bool = False,
+    check: bool = False,
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
     filter: Set[RowFilter] = {RowFilter.NoOp},
-    interlace: Optional[int] = None,
-    alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
+    interlace: Optional[Interlacing] = None,
+    optimize_alpha: bool = False,
     bit_depth_reduction: bool = True,
     color_type_reduction: bool = True,
     palette_reduction: bool = True,
@@ -91,12 +87,13 @@ def optimize_from_memory(
     level: int = 2,
     backup: bool = False,
     fix_errors: bool = False,
+    check: bool = False,
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
     filter: Set[RowFilter] = {RowFilter.NoOp},
-    interlace: Optional[int] = None,
-    alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
+    interlace: Optional[Interlacing] = None,
+    optimize_alpha: bool = False,
     bit_depth_reduction: bool = True,
     color_type_reduction: bool = True,
     palette_reduction: bool = True,
