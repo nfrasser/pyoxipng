@@ -2,6 +2,7 @@
 
 ## 7.0.0
 
+- Upgrade to oxipng 7
 - BREAKING: `filter` option now expects set of `oxipng.RowFilter` enum
 - BREAKING: `deflate` option now expects instance of `oxipng.Deflaters`
 - Added: `fast_evaluation` option
