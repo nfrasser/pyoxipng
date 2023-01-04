@@ -3,12 +3,6 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PySet, PyTuple};
 
-// impl<'source, T> FromPyObject<'source> for Vec<T> where T: FromPyObject<'source> {
-//     fn extract(ob: &'source PyAny) -> PyResult<Self> {
-//         py_iter_extract(ob)
-//     }
-// }
-
 pub fn py_iter_extract<'a, T, C>(val: &'a PyAny) -> PyResult<C>
 where
     T: FromPyObject<'a>,

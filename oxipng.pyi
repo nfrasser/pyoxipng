@@ -21,7 +21,7 @@ class AlphaOptim(Enum):
     Left = ...
 
 class RowFilter(Enum):
-    None = ...
+    NoOp = ...
     Sub = ...
     Up = ...
     Average = ...
@@ -43,6 +43,12 @@ class Headers:
     def keep(val: List[str]) -> "Headers": ...
     @staticmethod
     def all() -> "Headers": ...
+
+class Deflaters:
+    @staticmethod
+    def libdeflater(compression: int) -> "Deflaters": ...
+    @staticmethod
+    def zopfli(iterations: int) -> "Deflaters": ...
 
 class Zopfli:
     """
@@ -67,7 +73,7 @@ def optimize(
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
-    filter: Set[RowFilter] = {Rowfilter.None},
+    filter: Set[RowFilter] = {RowFilter.NoOp},
     interlace: Optional[int] = None,
     alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
     bit_depth_reduction: bool = True,
@@ -76,7 +82,7 @@ def optimize(
     grayscale_reduction: bool = True,
     idat_recoding: bool = True,
     strip: Headers = Headers.none(),
-    deflate: Union[Zopfli, Libdeflater] = Libdeflater(),
+    deflate: Deflaters = Deflaters.libdeflater(11),
     use_heuristics: bool = False,
     timeout: Optional[int] = None,
 ) -> None: ...
@@ -88,7 +94,7 @@ def optimize_from_memory(
     pretend: bool = False,
     force: bool = False,
     preserve_attrs: bool = False,
-    filter: Set[RowFilter] = {Rowfilter.None},
+    filter: Set[RowFilter] = {RowFilter.NoOp},
     interlace: Optional[int] = None,
     alphas: Set[AlphaOptim] = {AlphaOptim.NoOp},
     bit_depth_reduction: bool = True,
@@ -97,7 +103,7 @@ def optimize_from_memory(
     grayscale_reduction: bool = True,
     idat_recoding: bool = True,
     strip: Headers = Headers.none(),
-    deflate: Union[Zopfli, Libdeflater] = Libdeflater(),
+    deflate: Deflaters = Deflaters.libdeflater(11),
     use_heuristics: bool = False,
     timeout: Optional[int] = None,
 ) -> bytes: ...

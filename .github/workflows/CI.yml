@@ -50,13 +50,16 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     needs: test
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         manylinux: auto
         command: build
-        args: --release -o dist
+        args: --release -o dist -i python${{ matrix.python-version }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -66,12 +69,15 @@ jobs:
   windows:
     runs-on: windows-latest
     needs: test
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release --no-sdist -o dist
+        args: --release -o dist -i python${{ matrix.python-version }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
@@ -81,12 +87,15 @@ jobs:
   macos:
     runs-on: macos-latest
     needs: test
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         command: build
-        args: --release --no-sdist -o dist --universal2
+        args: --release -o dist --universal2 -i python${{ matrix.python-version }}
     - name: Upload wheels
       uses: actions/upload-artifact@v3
       with:
