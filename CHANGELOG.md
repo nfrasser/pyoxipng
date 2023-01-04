@@ -1,5 +1,12 @@
 # Changelog
 
+## 8.0.0
+
+- Update to oxipng 8
+- BREAKING: `interlace` option now expects `oxipng.Interlace` enum
+- BREAKING: replace `alphas` option with `optimize_alpha` boolean
+- Added: `check` option
+
 ## 7.0.0
 
 - Upgrade to oxipng 7
