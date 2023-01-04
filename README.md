@@ -107,7 +107,7 @@ Initialize the `filter` set with any of the following enum options:
 Set `interlace` to `None` to keep existing interlacing or to one of following
 enum options:
 
-- `oxipng.Interlacing.NoOp` (interlace disabled)
+- `oxipng.Interlacing.Off` (interlace disabled)
 - `oxipng.Interlacing.Adam7` (interlace enabled)
 
 ### strip

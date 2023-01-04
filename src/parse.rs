@@ -57,7 +57,7 @@ impl From<RowFilter> for op::RowFilter {
 #[pyclass]
 #[derive(Clone, Debug)]
 pub enum Interlacing {
-    NoOp = op::Interlacing::None as isize,
+    Off = op::Interlacing::None as isize,
     Adam7 = op::Interlacing::Adam7 as isize,
 }
 
@@ -73,7 +73,7 @@ impl Interlacing {
 impl From<Interlacing> for op::Interlacing {
     fn from(val: Interlacing) -> Self {
         match val {
-            Interlacing::NoOp => Self::None,
+            Interlacing::Off => Self::None,
             Interlacing::Adam7 => Self::Adam7,
         }
     }
