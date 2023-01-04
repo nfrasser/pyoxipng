@@ -52,7 +52,7 @@ jobs:
     needs: test
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         manylinux: auto
         command: build
@@ -68,7 +68,7 @@ jobs:
     needs: test
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         command: build
         args: --release -o dist
@@ -83,7 +83,7 @@ jobs:
     needs: test
     steps:
     - uses: actions/checkout@v3
-    - uses: messense/maturin-action@v1
+    - uses: PyO3/maturin-action@v1
       with:
         command: build
         args: --release -o dist --universal2
