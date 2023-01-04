@@ -11,42 +11,6 @@ use op::IndexSet;
 
 use crate::util::*;
 
-// Alpha optimization
-#[pyclass]
-#[derive(Clone, Debug)]
-pub enum AlphaOptim {
-    NoOp = op::AlphaOptim::NoOp as isize,
-    Black = op::AlphaOptim::Black as isize,
-    White = op::AlphaOptim::White as isize,
-    Up = op::AlphaOptim::Up as isize,
-    Right = op::AlphaOptim::Right as isize,
-    Down = op::AlphaOptim::Down as isize,
-    Left = op::AlphaOptim::Left as isize,
-}
-
-#[pymethods]
-impl AlphaOptim {
-    fn __hash__(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        (self.clone() as u64).hash(&mut hasher);
-        hasher.finish()
-    }
-}
-
-impl From<AlphaOptim> for op::AlphaOptim {
-    fn from(val: AlphaOptim) -> Self {
-        match val {
-            AlphaOptim::NoOp => Self::NoOp,
-            AlphaOptim::Black => Self::Black,
-            AlphaOptim::White => Self::White,
-            AlphaOptim::Up => Self::Up,
-            AlphaOptim::Right => Self::Right,
-            AlphaOptim::Down => Self::Down,
-            AlphaOptim::Left => Self::Left,
-        }
-    }
-}
-
 // Filter
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -85,6 +49,32 @@ impl From<RowFilter> for op::RowFilter {
             RowFilter::Bigrams => Self::Bigrams,
             RowFilter::BigEnt => Self::BigEnt,
             RowFilter::Brute => Self::Brute,
+        }
+    }
+}
+
+// Interlacing
+#[pyclass]
+#[derive(Clone, Debug)]
+pub enum Interlacing {
+    NoOp = op::Interlacing::None as isize,
+    Adam7 = op::Interlacing::Adam7 as isize,
+}
+
+#[pymethods]
+impl Interlacing {
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        (self.clone() as u64).hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+impl From<Interlacing> for op::Interlacing {
+    fn from(val: Interlacing) -> Self {
+        match val {
+            Interlacing::NoOp => Self::None,
+            Interlacing::Adam7 => Self::Adam7,
         }
     }
 }
@@ -204,6 +194,7 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "level" => {} // Handled elsewhere, ignore
         "backup" => opts.backup = value.downcast::<PyBool>()?.is_true(),
         "fix_errors" => opts.fix_errors = value.downcast::<PyBool>()?.is_true(),
+        "check" => opts.check = value.downcast::<PyBool>()?.is_true(),
         "pretend" => opts.pretend = value.downcast::<PyBool>()?.is_true(),
         "force" => opts.force = value.downcast::<PyBool>()?.is_true(),
         "preserve_attrs" => opts.preserve_attrs = value.downcast::<PyBool>()?.is_true(),
@@ -211,11 +202,14 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
             opts.filter =
                 py_iter_extract_map::<RowFilter, op::RowFilter, IndexSet<op::RowFilter>>(value)?
         }
-        "interlace" => opts.interlace = py_option(value)?,
-        "alphas" => {
-            opts.alphas =
-                py_iter_extract_map::<AlphaOptim, op::AlphaOptim, IndexSet<op::AlphaOptim>>(value)?
+        "interlace" => {
+            opts.interlace = if let Some(i) = py_option::<Interlacing>(value)? {
+                Some(i.into())
+            } else {
+                None
+            }
         }
+        "optimize_alpha" => opts.optimize_alpha = value.downcast::<PyBool>()?.is_true(),
         "bit_depth_reduction" => opts.bit_depth_reduction = value.downcast::<PyBool>()?.is_true(),
         "color_type_reduction" => opts.color_type_reduction = value.downcast::<PyBool>()?.is_true(),
         "palette_reduction" => opts.palette_reduction = value.downcast::<PyBool>()?.is_true(),
