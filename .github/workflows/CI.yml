@@ -46,6 +46,14 @@ jobs:
       run: pipenv install --dev --python ${{ matrix.python-version }}
     - run: pipenv run maturin develop
     - run: pipenv run pytest
+    - run: pipenv run maturin sdist -o dist
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+    - name: Upload wheels
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheels
+        path: dist
 
   linux:
     runs-on: ubuntu-latest
