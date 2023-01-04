@@ -1,11 +1,11 @@
 [build-system]
-requires = ["maturin>=0.12,<0.13"]
+requires = ["maturin>=0.14,<0.15"]
 build-backend = "maturin"
 
 [project]
 name = "pyoxipng"
 requires-python = ">=3.7"
-version = "6.0.0"
+version = "7.0.0"
 description = "Python wrapper for multithreaded .png image file optimizer oxipng"
 readme = "README.md"
 license = { file = "LICENSE" }
