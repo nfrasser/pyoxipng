@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.0.1
+
+- Python 3.12 wheels
+- Drop Python 3.7 support
+
 ## 8.0.0
 
 - Update to oxipng 8
