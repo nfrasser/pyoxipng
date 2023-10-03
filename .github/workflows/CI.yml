@@ -73,11 +73,12 @@ jobs:
         include:
           - target: aarch64
             interpreter: 3.11 3.12
+            python-version: '3.11'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version || '3.12' }}
           architecture: ${{ matrix.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
