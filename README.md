@@ -137,7 +137,7 @@ Initialize the `deflate` option with one of the following static methods in the
 ## Development
 
 1. Install [Rust](https://www.rust-lang.org/tools/install)
-1. Install [Python 3.7+](https://www.python.org/downloads/)
+1. Install [Python 3.8+](https://www.python.org/downloads/)
 1. Install [Pipenv](https://pipenv.pypa.io/en/latest/)
 1. Clone this repository and navigate to it via command line
    ```sh
