@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.7', '3.10']
+        python-version: ['3.8', '3.12']
     steps:
     - uses: actions-rs/toolchain@v1
       with:
@@ -47,9 +47,9 @@ jobs:
     - run: pipenv run maturin develop
     - run: pipenv run pytest
     - run: pipenv run maturin sdist -o dist
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
     - name: Upload wheels
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
       uses: actions/upload-artifact@v3
       with:
         name: wheels
@@ -60,7 +60,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@v3
     - uses: PyO3/maturin-action@v1
@@ -79,7 +79,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@v3
     - uses: PyO3/maturin-action@v1
@@ -97,7 +97,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@v3
     - uses: PyO3/maturin-action@v1

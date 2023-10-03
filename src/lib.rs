@@ -12,7 +12,7 @@ create_exception!(oxipng, PngError, PyException);
 
 /// Optimize the png file at the given input location. Optionally send it to the
 /// given output location.
-#[pyfunction(kwds = "**")]
+#[pyfunction]
 #[pyo3(text_signature = "(input, output, **kwargs)")]
 fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyResult<()> {
     let inpath = PathBuf::from(input.str()?.to_str()?);
@@ -30,7 +30,7 @@ fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyR
     Ok(())
 }
 
-#[pyfunction(kwds = "**")]
+#[pyfunction]
 #[pyo3(text_signature = "(data, **kwargs)")]
 fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
     let output = op::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwds)?)
