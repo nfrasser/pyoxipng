@@ -13,8 +13,8 @@ create_exception!(oxipng, PngError, PyException);
 /// Optimize the png file at the given input location. Optionally send it to the
 /// given output location.
 #[pyfunction]
-#[pyo3(text_signature = "(input, output, **kwargs)")]
-fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyResult<()> {
+#[pyo3(signature = (input, output=None, **kwargs))]
+fn optimize(input: &PyAny, output: Option<&PyAny>, kwargs: Option<&PyDict>) -> PyResult<()> {
     let inpath = PathBuf::from(input.str()?.to_str()?);
     let outpath = if let Some(out) = output {
         Some(PathBuf::from(out.str()?.to_str()?))
@@ -25,15 +25,15 @@ fn optimize(input: &PyAny, output: Option<&PyAny>, kwds: Option<&PyDict>) -> PyR
     let inpath = op::InFile::Path(inpath);
     let outpath = op::OutFile::Path(outpath);
 
-    op::optimize(&inpath, &outpath, &parse::parse_kw_opts(kwds)?)
+    op::optimize(&inpath, &outpath, &parse::parse_kw_opts(kwargs)?)
         .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
     Ok(())
 }
 
 #[pyfunction]
-#[pyo3(text_signature = "(data, **kwargs)")]
-fn optimize_from_memory(data: &PyBytes, kwds: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
-    let output = op::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwds)?)
+#[pyo3(signature = (data, **kwargs))]
+fn optimize_from_memory(data: &PyBytes, kwargs: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
+    let output = op::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwargs)?)
         .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
     Python::with_gil(|py| {
         let bytes: Py<PyBytes> = PyBytes::new(py, &*output).into();
