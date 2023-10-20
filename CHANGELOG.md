@@ -1,5 +1,16 @@
 # Changelog
 
+## 9.0.0
+
+- Update to oxipng 9
+- BREAKING: Removed `backup` option
+- BREAKING: Removed `check` option
+- BREAKING: Removed `pretend` option; use `optimize(file, None)` instead
+- BREAKING: Removed `preserve_attrs` option
+- BREAKING: Renamed `oxipng.Headers` to `oxipng.StripChunks`
+- Added: `scale_16` option
+- Fixed: correct `fast_evaluation` option implementation
+
 ## 8.0.1
 
 - Python 3.12 wheels
