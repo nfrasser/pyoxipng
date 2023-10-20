@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.19.2", features = ["extension-module"] }
-oxipng = { version = "8.0.*" }
+oxipng = { version = "9.0.*" }

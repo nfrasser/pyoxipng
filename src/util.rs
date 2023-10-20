@@ -1,15 +1,7 @@
 use core::time::Duration;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyList, PySet, PyTuple};
-
-pub fn py_iter_extract<'a, T, C>(val: &'a PyAny) -> PyResult<C>
-where
-    T: FromPyObject<'a>,
-    C: Default + Extend<T>,
-{
-    py_iter_to_collection(val, |val| val.extract())
-}
 
 pub fn py_iter_extract_map<'a, T, U, C>(val: &'a PyAny) -> PyResult<C>
 where
@@ -21,6 +13,34 @@ where
         val.extract::<T>()
             .and_then(|x| Ok(x.into()))
             .or_else(|err| Err(err))
+    })
+}
+
+/// Convert a collection of strings into a Iterable of `[u8; 4]` byte strings
+/// used for the StripChunks option
+pub fn py_iter_extract_chunks<'a, C>(val: &'a PyAny) -> PyResult<C>
+where
+    C: Default + Extend<[u8; 4]>,
+{
+    py_iter_to_collection(val, |x| {
+        let chunk: [u8; 4] = x
+            .extract::<String>()
+            .or_else(|_| {
+                Err(PyTypeError::new_err(format!(
+                    "Invalid chunk {} with type {} (str expected)",
+                    x.to_string(),
+                    x.get_type().to_string()
+                )))
+            })?
+            .as_bytes()
+            .try_into()
+            .or_else(|_| {
+                Err(PyValueError::new_err(format!(
+                    "Invalid chunk {} (must have 4 letters)",
+                    x.to_string()
+                )))
+            })?;
+        Ok(chunk)
     })
 }
 
