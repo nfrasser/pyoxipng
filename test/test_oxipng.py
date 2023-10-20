@@ -19,11 +19,6 @@ def outfile(tmpdir):
 
 
 @pytest.fixture
-def bakfile(tmpdir):
-    return Path(tmpdir) / "shipitsquirrel.bak.png"
-
-
-@pytest.fixture
 def indata():
     with open(Path() / "test" / "shipitsquirrel.png", "rb") as f:
         return f.read()
@@ -45,18 +40,21 @@ def test_optimize_level(infile, outfile):
     assert infile.stat().st_size > outfile.stat().st_size
 
 
-def test_optimize_pretend(infile, outfile):
-    oxipng.optimize(infile, outfile, pretend=True)
-    assert not outfile.exists()
+def test_optimize_pretend(infile: Path, outfile):
+    initial_stat = infile.stat()
+    oxipng.optimize(infile, None)
+    new_stat = infile.stat()
+
+    assert initial_stat.st_mtime == new_stat.st_mtime
+    assert initial_stat.st_size == new_stat.st_size
 
 
-def test_optimize_opts(infile, bakfile):
+def test_optimize_opts(infile):
+    initial_size = infile.stat().st_size
     oxipng.optimize(
         infile,
-        backup=True,
         fix_errors=True,
         force=True,
-        preserve_attrs=True,
         filter={oxipng.RowFilter.Sub, oxipng.RowFilter.Up, oxipng.RowFilter.Average},
         interlace=oxipng.Interlacing.Adam7,
         optimize_alpha=True,
@@ -64,15 +62,15 @@ def test_optimize_opts(infile, bakfile):
         palette_reduction=False,
         grayscale_reduction=False,
         idat_recoding=False,
-        strip=oxipng.Headers.strip(["foo", "bar"]),
+        scale_16=True,
+        strip=oxipng.StripChunks.strip(["cICP", "sRGB"]),
         deflate=oxipng.Deflaters.libdeflater(12),
         timeout=100,
     )
-    assert bakfile.exists()
-    assert infile.stat().st_size != bakfile.stat().st_size
+    assert infile.stat().st_size != initial_size
 
 
-def test_optimize_inplace(infile):
+def test_optimize_inplace(infile: Path):
     orig_size = infile.stat().st_size
     oxipng.optimize(infile)
     assert infile.stat().st_size < orig_size
@@ -90,6 +88,22 @@ def test_raises_pngerror():
 def test_raises_typeerror(indata):
     with pytest.raises(TypeError):
         oxipng.optimize_from_memory(indata, filter={1: 2})  # type: ignore
+
+
+def test_strip_chunks():
+    assert oxipng.StripChunks.none()
+    assert oxipng.StripChunks.strip(["sRGB"])
+    assert oxipng.StripChunks.safe()
+    assert oxipng.StripChunks.keep(["sRGB", "pHYs"])
+
+    with pytest.raises(TypeError):
+        assert oxipng.StripChunks.strip(["sRGB", 42])  # type: ignore
+
+    with pytest.raises(ValueError):
+        assert oxipng.StripChunks.keep(["RGB"])
+
+    with pytest.raises(ValueError):
+        assert oxipng.StripChunks.keep(["RGB123"])
 
 
 def test_deflate_zopfli():
