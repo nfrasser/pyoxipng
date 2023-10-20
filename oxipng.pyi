@@ -3,8 +3,7 @@ Python wrapper for multithreaded .png image file optimizer oxipng
 (https://github.com/shssoichiro/oxipng - written in Rust). Use this module to
 reduce the file size of your PNG images.
 """
-from collections.abc import Collection
-from typing import List, Optional, Union
+from typing import Collection, Optional, Union
 from enum import Enum
 from os import PathLike
 
