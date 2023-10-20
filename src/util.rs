@@ -16,34 +16,6 @@ where
     })
 }
 
-/// Convert a collection of strings into a Iterable of `[u8; 4]` byte strings
-/// used for the StripChunks option
-pub fn py_iter_extract_chunks<'a, C>(val: &'a PyAny) -> PyResult<C>
-where
-    C: Default + Extend<[u8; 4]>,
-{
-    py_iter_to_collection(val, |x| {
-        let chunk: [u8; 4] = x
-            .extract::<String>()
-            .or_else(|_| {
-                Err(PyTypeError::new_err(format!(
-                    "Invalid chunk {} with type {} (str expected)",
-                    x.to_string(),
-                    x.get_type().to_string()
-                )))
-            })?
-            .as_bytes()
-            .try_into()
-            .or_else(|_| {
-                Err(PyValueError::new_err(format!(
-                    "Invalid chunk {} (must have 4 letters)",
-                    x.to_string()
-                )))
-            })?;
-        Ok(chunk)
-    })
-}
-
 pub fn py_iter_to_collection<'a, T, C>(
     val: &'a PyAny,
     extract: impl Fn(&'a PyAny) -> PyResult<T>,
@@ -70,6 +42,28 @@ where
         ));
     }
     Ok(collection)
+}
+
+/// Convert a Python string into `[u8; 4]` byte strings used for the StripChunks option
+pub fn py_str_to_chunk<'a>(val: &'a PyAny) -> PyResult<[u8; 4]> {
+    let chunk: [u8; 4] = val
+        .extract::<String>()
+        .or_else(|_| {
+            Err(PyTypeError::new_err(format!(
+                "Invalid chunk {} with type {} (str expected)",
+                val.to_string(),
+                val.get_type().to_string()
+            )))
+        })?
+        .as_bytes()
+        .try_into()
+        .or_else(|_| {
+            Err(PyValueError::new_err(format!(
+                "Invalid chunk {} (must have 4 letters)",
+                val.to_string()
+            )))
+        })?;
+    Ok(chunk)
 }
 
 pub fn py_option<'a, T>(val: &'a PyAny) -> PyResult<Option<T>>

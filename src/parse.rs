@@ -92,7 +92,7 @@ impl StripChunks {
 
     #[staticmethod]
     fn strip(val: &PyAny) -> PyResult<Self> {
-        let chunks: IndexSet<[u8; 4]> = py_iter_extract_chunks(val)?;
+        let chunks: IndexSet<[u8; 4]> = py_iter_to_collection(val, py_str_to_chunk)?;
         Ok(Self(oxi::StripChunks::Strip(chunks)))
     }
 
@@ -103,7 +103,7 @@ impl StripChunks {
 
     #[staticmethod]
     fn keep(val: &PyAny) -> PyResult<Self> {
-        let chunks: IndexSet<[u8; 4]> = py_iter_extract_chunks(val)?;
+        let chunks: IndexSet<[u8; 4]> = py_iter_to_collection(val, py_str_to_chunk)?;
         Ok(Self(oxi::StripChunks::Keep(chunks)))
     }
     #[staticmethod]
