@@ -1,5 +1,6 @@
 from pathlib import Path
 from shutil import copy2
+import gzip
 import oxipng
 import pytest
 
@@ -18,9 +19,15 @@ def outfile(tmpdir):
     return Path(tmpdir) / "shipitsquirrel-optimized.png"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def indata():
     with open(Path() / "test" / "shipitsquirrel.png", "rb") as f:
+        return f.read()
+
+
+@pytest.fixture(scope="session")
+def rawdata():
+    with gzip.GzipFile(Path() / "test" / "python-logo-only.raw.gz") as f:
         return f.read()
 
 
@@ -40,15 +47,6 @@ def test_optimize_level(infile, outfile):
     assert infile.stat().st_size > outfile.stat().st_size
 
 
-def test_optimize_pretend(infile: Path, outfile):
-    initial_stat = infile.stat()
-    oxipng.optimize(infile, None)
-    new_stat = infile.stat()
-
-    assert initial_stat.st_mtime == new_stat.st_mtime
-    assert initial_stat.st_size == new_stat.st_size
-
-
 def test_optimize_opts(infile):
     initial_size = infile.stat().st_size
     oxipng.optimize(
@@ -63,7 +61,7 @@ def test_optimize_opts(infile):
         grayscale_reduction=False,
         idat_recoding=False,
         scale_16=True,
-        strip=oxipng.StripChunks.strip(["cICP", "sRGB"]),
+        strip=oxipng.StripChunks.strip([b"cICP", b"sRGB"]),
         deflate=oxipng.Deflaters.libdeflater(12),
         timeout=100,
     )
@@ -92,18 +90,18 @@ def test_raises_typeerror(indata):
 
 def test_strip_chunks():
     assert oxipng.StripChunks.none()
-    assert oxipng.StripChunks.strip(["sRGB"])
+    assert oxipng.StripChunks.strip([b"sRGB"])
     assert oxipng.StripChunks.safe()
-    assert oxipng.StripChunks.keep(["sRGB", "pHYs"])
+    assert oxipng.StripChunks.keep([b"sRGB", b"pHYs"])
 
     with pytest.raises(TypeError):
         assert oxipng.StripChunks.strip(["sRGB", 42])  # type: ignore
 
     with pytest.raises(ValueError):
-        assert oxipng.StripChunks.keep(["RGB"])
+        assert oxipng.StripChunks.keep([b"RGB"])
 
     with pytest.raises(ValueError):
-        assert oxipng.StripChunks.keep(["RGB123"])
+        assert oxipng.StripChunks.keep([b"RGB123"])
 
 
 def test_deflate_zopfli():
@@ -116,3 +114,53 @@ def test_deflate_zopfli():
 
     with pytest.raises(OverflowError):
         oxipng.Deflaters.zopfli(256)
+
+
+def test_raw_image(rawdata):
+    raw = oxipng.RawImage(rawdata, 269, 326)
+    raw.add_png_chunk(b"sRBG", b"\0")
+    raw.add_icc_profile(b"Color LCD")
+    optimized = raw.create_optimized_png(
+        level=2,
+        fix_errors=True,
+        interlace=oxipng.Interlacing.Adam7,
+    )
+    assert len(optimized) < len(rawdata)
+
+
+def test_raw_image_rgb():
+    raw = oxipng.RawImage(
+        b"\1\2\3\4\5\6\7\6\5\1\2\3",
+        2,
+        2,
+        color_type=oxipng.ColorType.rgb((4, 5, 6)),
+        bit_depth=8,
+    )
+    assert raw.create_optimized_png()
+
+
+def test_color_type():
+    assert oxipng.ColorType.grayscale()
+    assert oxipng.ColorType.grayscale(42)
+
+    with pytest.raises(OverflowError):
+        oxipng.ColorType.grayscale(1_000_000)
+
+    assert oxipng.ColorType.rgb()
+    assert oxipng.ColorType.rgb((0, 0, 0))
+    assert oxipng.ColorType.rgb((65535, 65535, 65535))
+
+    with pytest.raises(OverflowError):
+        assert oxipng.ColorType.rgb((65535, 65536, 65535))
+
+    assert oxipng.ColorType.indexed([[1, 2, 3, 4]])
+    assert oxipng.ColorType.indexed([(i, i, i, 255) for i in range(256)])
+
+    with pytest.raises(OverflowError):
+        assert oxipng.ColorType.indexed([(255, 255, 255, 256)])
+
+    with pytest.raises(ValueError):
+        assert oxipng.ColorType.indexed([(255, 255, 255)])
+
+    assert oxipng.ColorType.grayscale_alpha()
+    assert oxipng.ColorType.rgba()
