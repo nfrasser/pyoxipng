@@ -42,6 +42,8 @@ import oxipng
 
 ### oxipng.optimize(input, output=None, \*\*kwargs)
 
+Optimize a file on disk.
+
 **Parameters**:
 
 - **input** _(str | bytes | PathLike)_ – path to input file to optimize
