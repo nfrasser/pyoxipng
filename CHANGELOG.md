@@ -5,9 +5,10 @@
 - Update to oxipng 9
 - BREAKING: Removed `backup` option
 - BREAKING: Removed `check` option
-- BREAKING: Removed `pretend` option; use `optimize(file, None)` instead
+- BREAKING: Removed `pretend` option
 - BREAKING: Removed `preserve_attrs` option
-- BREAKING: Renamed `oxipng.Headers` to `oxipng.StripChunks`
+- BREAKING: Replaced `oxipng.Headers` with `oxipng.StripChunks`
+- Added: `RawImage` class for optimizing raw RGBA data
 - Added: `scale_16` option
 - Fixed: correct `fast_evaluation` option implementation
 
