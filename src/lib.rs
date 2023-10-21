@@ -1,69 +1,54 @@
-use ::oxipng as oxi;
-use pyo3::create_exception;
-use pyo3::exceptions::{PyException, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyBytes, PyDict, PyTuple};
+use pyo3::types::PyDict;
+use std::borrow::Cow;
 use std::path::PathBuf;
 
-mod parse;
-mod util;
+use ::oxipng as oxi;
 
-create_exception!(oxipng, PngError, PyException);
+mod error;
+mod parse;
+mod raw;
+mod util;
 
 /// Optimize the png file at the given input location. Optionally send it to the
 /// given output location.
 #[pyfunction]
-#[pyo3(signature = (input, *args, **kwargs))]
-fn optimize(input: &PyAny, args: &PyTuple, kwargs: Option<&PyDict>) -> PyResult<()> {
-    if args.len() > 1 {
-        return Err(PyTypeError::new_err(format!(
-            "optimize() takes 1 or 2 positional arguments but {} were given",
-            args.len() + 1
-        )));
-    }
-
-    let inpath = oxi::InFile::Path(PathBuf::from(input.str()?.to_str()?));
-    let outpath = if args.len() == 1 {
-        let output = args.get_item(0)?;
-        if output.is_none() {
-            // Explicit None, don't write output, just calculate
-            oxi::OutFile::None
-        } else {
-            // Write to path
-            oxi::OutFile::from_path(PathBuf::from(output.str()?.to_str()?))
-        }
-    } else {
-        // in-place optimize
-        oxi::OutFile::Path {
+#[pyo3(signature = (input, output=None, **kwargs))]
+fn optimize(input: PathBuf, output: Option<PathBuf>, kwargs: Option<&PyDict>) -> PyResult<()> {
+    let inpath = oxi::InFile::Path(input);
+    let outpath = output
+        .and_then(|path| Some(oxi::OutFile::from_path(path)))
+        .unwrap_or(oxi::OutFile::Path {
             path: None,
             preserve_attrs: false,
-        }
-    };
+        }); // No arg specified, in-place optimize
 
     oxi::optimize(&inpath, &outpath, &parse::parse_kw_opts(kwargs)?)
-        .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
+        .or_else(error::handle_png_error)?;
     Ok(())
 }
 
+/// Perform optimization on the input file using the options provided, where the
+/// file is already loaded in-memory
 #[pyfunction]
 #[pyo3(signature = (data, **kwargs))]
-fn optimize_from_memory(data: &PyBytes, kwargs: Option<&PyDict>) -> PyResult<Py<PyBytes>> {
-    let output = oxi::optimize_from_memory(data.as_bytes(), &parse::parse_kw_opts(kwargs)?)
-        .or_else(|err| Err(PngError::new_err(parse::png_error_to_string(&err))))?;
-    Python::with_gil(|py| {
-        let bytes: Py<PyBytes> = PyBytes::new(py, &*output).into();
-        Ok(bytes)
-    })
+fn optimize_from_memory<'a>(data: &'a [u8], kwargs: Option<&'a PyDict>) -> PyResult<Cow<'a, [u8]>> {
+    // Note: returned Cow<[u8]> interpreted as Python bytes
+    oxi::optimize_from_memory(data, &parse::parse_kw_opts(kwargs)?)
+        .and_then(|data| Ok(data.into()))
+        .or_else(error::handle_png_error)
 }
 
 /// A Python module implemented in Rust.
 #[pymodule]
 fn oxipng(py: Python, m: &PyModule) -> PyResult<()> {
-    m.add("PngError", py.get_type::<PngError>())?;
+    m.add("PngError", py.get_type::<error::PngError>())?;
     m.add_class::<parse::RowFilter>()?;
     m.add_class::<parse::Interlacing>()?;
     m.add_class::<parse::StripChunks>()?;
     m.add_class::<parse::Deflaters>()?;
+    m.add_class::<raw::ColorType>()?;
+    m.add_class::<raw::RawImage>()?;
     m.add_function(wrap_pyfunction!(optimize, m)?)?;
     m.add_function(wrap_pyfunction!(optimize_from_memory, m)?)?;
     Ok(())
