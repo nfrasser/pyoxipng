@@ -4,7 +4,6 @@ use pyo3::types::{PyBool, PyDict, PyString};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroU8;
-use std::string::String;
 
 use ::oxipng as oxi;
 use oxi::IndexSet;
@@ -133,20 +132,6 @@ impl Deflaters {
                 iterations
             )))
         }
-    }
-}
-
-pub fn png_error_to_string(err: &oxi::PngError) -> String {
-    match err {
-        oxi::PngError::DeflatedDataTooLong(x) => format!("Deflated Data Too Long: {}", x),
-        oxi::PngError::TimedOut => String::from("Timed Out"),
-        oxi::PngError::NotPNG => String::from("Not PNG"),
-        oxi::PngError::APNGNotSupported => String::from("APNG Not Supported"),
-        oxi::PngError::InvalidData => String::from("Invalid Data"),
-        oxi::PngError::TruncatedData => String::from("Truncated Data"),
-        oxi::PngError::ChunkMissing(s) => format!("Chunk Missing: {}", s),
-        oxi::PngError::Other(err) => format!("Other: {}", err),
-        _ => String::from("An unknown error occurred!"),
     }
 }
 
