@@ -38,7 +38,13 @@ impl ColorType {
     #[staticmethod]
     #[pyo3(signature = (palette))]
     fn indexed(palette: &PyList) -> PyResult<Self> {
-        let mut pal = Vec::with_capacity(palette.len());
+        let capacity = palette.len();
+        if capacity == 0 || capacity > 256 {
+            return Err(PyValueError::new_err(
+                "palette len must be greater than 0 and less than or equal to 256",
+            ));
+        }
+        let mut pal = Vec::with_capacity(capacity);
         for col in palette {
             let col = util::py_iter_extract::<u8, Vec<u8>>(col)?;
             if col.len() != 4 {
