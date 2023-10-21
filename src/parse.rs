@@ -1,13 +1,12 @@
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyBool, PyDict, PyString};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroU8;
-use std::string::String;
 
-use ::oxipng as op;
-use op::IndexSet;
+use ::oxipng as oxi;
+use oxi::IndexSet;
 
 use crate::util::*;
 
@@ -15,16 +14,16 @@ use crate::util::*;
 #[pyclass]
 #[derive(Clone, Debug)]
 pub enum RowFilter {
-    NoOp = op::RowFilter::None as isize,
-    Sub = op::RowFilter::Sub as isize,
-    Up = op::RowFilter::Up as isize,
-    Average = op::RowFilter::Average as isize,
-    Paeth = op::RowFilter::Paeth as isize,
-    MinSum = op::RowFilter::MinSum as isize,
-    Entropy = op::RowFilter::Entropy as isize,
-    Bigrams = op::RowFilter::Bigrams as isize,
-    BigEnt = op::RowFilter::BigEnt as isize,
-    Brute = op::RowFilter::Brute as isize,
+    NoOp = oxi::RowFilter::None as isize,
+    Sub = oxi::RowFilter::Sub as isize,
+    Up = oxi::RowFilter::Up as isize,
+    Average = oxi::RowFilter::Average as isize,
+    Paeth = oxi::RowFilter::Paeth as isize,
+    MinSum = oxi::RowFilter::MinSum as isize,
+    Entropy = oxi::RowFilter::Entropy as isize,
+    Bigrams = oxi::RowFilter::Bigrams as isize,
+    BigEnt = oxi::RowFilter::BigEnt as isize,
+    Brute = oxi::RowFilter::Brute as isize,
 }
 
 #[pymethods]
@@ -36,7 +35,7 @@ impl RowFilter {
     }
 }
 
-impl From<RowFilter> for op::RowFilter {
+impl From<RowFilter> for oxi::RowFilter {
     fn from(val: RowFilter) -> Self {
         match val {
             RowFilter::NoOp => Self::None,
@@ -57,8 +56,8 @@ impl From<RowFilter> for op::RowFilter {
 #[pyclass]
 #[derive(Clone, Debug)]
 pub enum Interlacing {
-    Off = op::Interlacing::None as isize,
-    Adam7 = op::Interlacing::Adam7 as isize,
+    Off = oxi::Interlacing::None as isize,
+    Adam7 = oxi::Interlacing::Adam7 as isize,
 }
 
 #[pymethods]
@@ -70,7 +69,7 @@ impl Interlacing {
     }
 }
 
-impl From<Interlacing> for op::Interlacing {
+impl From<Interlacing> for oxi::Interlacing {
     fn from(val: Interlacing) -> Self {
         match val {
             Interlacing::Off => Self::None,
@@ -81,52 +80,52 @@ impl From<Interlacing> for op::Interlacing {
 
 #[pyclass]
 #[derive(Debug, Clone)]
-pub struct Headers(pub op::Headers);
+pub struct StripChunks(pub oxi::StripChunks);
 
 #[pymethods]
-impl Headers {
+impl StripChunks {
     #[staticmethod]
     fn none() -> Self {
-        Self(op::Headers::None)
+        Self(oxi::StripChunks::None)
     }
 
     #[staticmethod]
     fn strip(val: &PyAny) -> PyResult<Self> {
-        let chunks: Vec<String> = py_iter_extract(val)?;
-        Ok(Self(op::Headers::Strip(chunks)))
+        let chunks: IndexSet<[u8; 4]> = py_iter_to_collection(val, py_str_to_chunk)?;
+        Ok(Self(oxi::StripChunks::Strip(chunks)))
     }
 
     #[staticmethod]
     fn safe() -> Self {
-        Self(op::Headers::Safe)
+        Self(oxi::StripChunks::Safe)
     }
 
     #[staticmethod]
     fn keep(val: &PyAny) -> PyResult<Self> {
-        let chunks: IndexSet<String> = py_iter_extract(val)?;
-        Ok(Self(op::Headers::Keep(chunks)))
+        let chunks: IndexSet<[u8; 4]> = py_iter_to_collection(val, py_str_to_chunk)?;
+        Ok(Self(oxi::StripChunks::Keep(chunks)))
     }
     #[staticmethod]
     fn all() -> Self {
-        Self(op::Headers::All)
+        Self(oxi::StripChunks::All)
     }
 }
 
 #[pyclass]
 #[derive(Debug, Clone)]
-pub struct Deflaters(pub op::Deflaters);
+pub struct Deflaters(pub oxi::Deflaters);
 
 #[pymethods]
 impl Deflaters {
     #[staticmethod]
     fn libdeflater(compression: u8) -> Self {
-        Self(op::Deflaters::Libdeflater { compression })
+        Self(oxi::Deflaters::Libdeflater { compression })
     }
 
     #[staticmethod]
     fn zopfli(iterations: u8) -> PyResult<Self> {
         if let Some(iterations) = NonZeroU8::new(iterations) {
-            Ok(Self(op::Deflaters::Zopfli { iterations }))
+            Ok(Self(oxi::Deflaters::Zopfli { iterations }))
         } else {
             Err(PyTypeError::new_err(format!(
                 "Invalid zopfli iterations {}; must be in range [1, 255]",
@@ -136,44 +135,30 @@ impl Deflaters {
     }
 }
 
-pub fn png_error_to_string(err: &op::PngError) -> String {
-    match err {
-        op::PngError::DeflatedDataTooLong(x) => format!("Deflated Data Too Long: {}", x),
-        op::PngError::TimedOut => String::from("Timed Out"),
-        op::PngError::NotPNG => String::from("Not PNG"),
-        op::PngError::APNGNotSupported => String::from("APNG Not Supported"),
-        op::PngError::InvalidData => String::from("Invalid Data"),
-        op::PngError::TruncatedData => String::from("Truncated Data"),
-        op::PngError::ChunkMissing(s) => format!("Chunk Missing: {}", s),
-        op::PngError::Other(err) => format!("Other: {}", err),
-        _ => String::from("An unknown error occurred!"),
-    }
-}
-
-pub fn parse_kw_opts(kwds: Option<&PyDict>) -> PyResult<op::Options> {
+pub fn parse_kw_opts(kwds: Option<&PyDict>) -> PyResult<oxi::Options> {
     if let Some(kwopts) = kwds {
         parse_kw_opts_dict(kwopts)
     } else {
-        Ok(op::Options::default())
+        Ok(oxi::Options::default())
     }
 }
 
-pub fn parse_kw_opts_dict(kwops: &PyDict) -> PyResult<op::Options> {
+pub fn parse_kw_opts_dict(kwops: &PyDict) -> PyResult<oxi::Options> {
     let mut opts = if let Some(level) = kwops.get_item("level") {
         let level: u8 = level.extract().or_else(|err| {
-            Err(PyTypeError::new_err(format!(
+            Err(PyValueError::new_err(format!(
                 "Invalid optimization level; countered {}",
                 err
             )))
         })?;
         if level > 6 {
-            return Err(PyTypeError::new_err(format!(
-                "Invalid optimization level; must be between 0 and 6 inclusive"
-            )));
+            return Err(PyValueError::new_err(
+                "Invalid optimization level; must be between 0 and 6 inclusive",
+            ));
         }
-        op::Options::from_preset(level)
+        oxi::Options::from_preset(level)
     } else {
-        op::Options::default()
+        oxi::Options::default()
     };
 
     for (k, v) in kwops.iter() {
@@ -189,18 +174,14 @@ pub fn parse_kw_opts_dict(kwops: &PyDict) -> PyResult<op::Options> {
     Ok(opts)
 }
 
-fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()> {
+fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut oxi::Options) -> PyResult<()> {
     match key {
         "level" => {} // Handled elsewhere, ignore
-        "backup" => opts.backup = value.downcast::<PyBool>()?.is_true(),
         "fix_errors" => opts.fix_errors = value.downcast::<PyBool>()?.is_true(),
-        "check" => opts.check = value.downcast::<PyBool>()?.is_true(),
-        "pretend" => opts.pretend = value.downcast::<PyBool>()?.is_true(),
         "force" => opts.force = value.downcast::<PyBool>()?.is_true(),
-        "preserve_attrs" => opts.preserve_attrs = value.downcast::<PyBool>()?.is_true(),
         "filter" => {
             opts.filter =
-                py_iter_extract_map::<RowFilter, op::RowFilter, IndexSet<op::RowFilter>>(value)?
+                py_iter_extract_map::<RowFilter, oxi::RowFilter, IndexSet<oxi::RowFilter>>(value)?
         }
         "interlace" => {
             opts.interlace = if let Some(i) = py_option::<Interlacing>(value)? {
@@ -215,7 +196,8 @@ fn parse_kw_opt(key: &str, value: &PyAny, opts: &mut op::Options) -> PyResult<()
         "palette_reduction" => opts.palette_reduction = value.downcast::<PyBool>()?.is_true(),
         "grayscale_reduction" => opts.grayscale_reduction = value.downcast::<PyBool>()?.is_true(),
         "idat_recoding" => opts.idat_recoding = value.downcast::<PyBool>()?.is_true(),
-        "strip" => opts.strip = value.extract::<Headers>()?.0,
+        "scale_16" => opts.scale_16 = value.downcast::<PyBool>()?.is_true(),
+        "strip" => opts.strip = value.extract::<StripChunks>()?.0,
         "deflate" => opts.deflate = value.extract::<Deflaters>()?.0,
         "fast_evaluation" => opts.fast_evaluation = value.downcast::<PyBool>()?.is_true(),
         "timeout" => opts.timeout = py_duration(value)?,

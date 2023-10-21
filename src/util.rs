@@ -1,7 +1,7 @@
 use core::time::Duration;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyList, PySet, PyTuple};
+use pyo3::types::{PyBytes, PyList, PySet, PyTuple};
 
 pub fn py_iter_extract<'a, T, C>(val: &'a PyAny) -> PyResult<C>
 where
@@ -50,6 +50,28 @@ where
         ));
     }
     Ok(collection)
+}
+
+/// Convert a Python string into `[u8; 4]` byte strings used for the StripChunks option
+pub fn py_str_to_chunk<'a>(val: &'a PyAny) -> PyResult<[u8; 4]> {
+    let chunk: [u8; 4] = val
+        .downcast::<PyBytes>()
+        .or_else(|_| {
+            Err(PyTypeError::new_err(format!(
+                "Invalid chunk {} with type {} (bytes expected)",
+                val.to_string(),
+                val.get_type().to_string()
+            )))
+        })?
+        .as_bytes()
+        .try_into()
+        .or_else(|_| {
+            Err(PyValueError::new_err(format!(
+                "Invalid chunk {} (must have 4 bytes)",
+                val.to_string()
+            )))
+        })?;
+    Ok(chunk)
 }
 
 pub fn py_option<'a, T>(val: &'a PyAny) -> PyResult<Option<T>>
