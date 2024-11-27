@@ -190,7 +190,7 @@ class RawImage:
         scale_16: bool = False,
         strip: StripChunks = StripChunks.none(),
         deflate: Deflaters = Deflaters.libdeflater(11),
-        use_heuristics: bool = False,
+        fast_evaluation: bool = False,
         timeout: Optional[int] = None,
     ) -> bytes:
         """
@@ -218,7 +218,7 @@ def optimize(
     scale_16: bool = False,
     strip: StripChunks = StripChunks.none(),
     deflate: Deflaters = Deflaters.libdeflater(11),
-    use_heuristics: bool = False,
+    fast_evaluation: bool = False,
     timeout: Optional[int] = None,
 ) -> None:
     """
@@ -245,7 +245,7 @@ def optimize_from_memory(
     scale_16: bool = False,
     strip: StripChunks = StripChunks.none(),
     deflate: Deflaters = Deflaters.libdeflater(11),
-    use_heuristics: bool = False,
+    fast_evaluation: bool = False,
     timeout: Optional[int] = None,
 ) -> bytes:
     """
