@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "pyoxipng"
 requires-python = ">=3.8"
-version = "9.0.1"
+version = "9.1.0"
 description = "Python wrapper for multithreaded .png image file optimizer oxipng"
 readme = "README.md"
 license = { file = "LICENSE" }
