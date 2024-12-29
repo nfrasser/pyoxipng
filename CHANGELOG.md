@@ -1,5 +1,10 @@
 # Changelog
 
+## 9.0.1
+
+- Support for Python 3.13
+- Upgrade pip dependencies
+
 ## 9.0.0
 
 - Update to oxipng 9
