@@ -1,10 +1,9 @@
+use crate::{error, options};
+use ::oxipng as oxi;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use std::borrow::Cow;
-
-use crate::{error, parse, util};
-use ::oxipng as oxi;
 
 #[pyclass]
 #[derive(Debug, Clone)]
@@ -20,14 +19,8 @@ impl ColorType {
 
     #[staticmethod]
     #[pyo3(signature = (transparent_color=None))]
-    fn rgb(transparent_color: Option<&PyAny>) -> PyResult<Self> {
+    fn rgb(transparent_color: Option<[u16; 3]>) -> PyResult<Self> {
         let transparent_color = if let Some(col) = transparent_color {
-            let col = util::py_iter_extract::<u16, Vec<u16>>(col)?;
-            if col.len() != 3 {
-                return Err(PyValueError::new_err(
-                    "Expected collection of three 16-bit ints",
-                ));
-            }
             Some(oxi::RGB16::new(col[0], col[1], col[2]))
         } else {
             None
@@ -37,24 +30,19 @@ impl ColorType {
 
     #[staticmethod]
     #[pyo3(signature = (palette))]
-    fn indexed(palette: &PyList) -> PyResult<Self> {
-        let capacity = palette.len();
-        if capacity == 0 || capacity > 256 {
+    fn indexed(palette: Vec<[u8; 4]>) -> PyResult<Self> {
+        let len = palette.len();
+        if len == 0 || len > 256 {
             return Err(PyValueError::new_err(
                 "palette len must be greater than 0 and less than or equal to 256",
             ));
         }
-        let mut pal = Vec::with_capacity(capacity);
-        for col in palette {
-            let col = util::py_iter_extract::<u8, Vec<u8>>(col)?;
-            if col.len() != 4 {
-                return Err(PyValueError::new_err(
-                    "Expected each item in palette to be a collection of four 8-bit ints",
-                ));
-            }
-            pal.push(oxi::RGBA8::new(col[0], col[1], col[2], col[3]))
-        }
-        Ok(Self(oxi::ColorType::Indexed { palette: pal }))
+        Ok(Self(oxi::ColorType::Indexed {
+            palette: palette
+                .iter()
+                .map(|col| oxi::RGBA8::new(col[0], col[1], col[2], col[3]))
+                .collect(),
+        }))
     }
 
     #[staticmethod]
@@ -112,8 +100,13 @@ impl RawImage {
     }
 
     #[pyo3(signature = (name, data))]
-    fn add_png_chunk(&mut self, name: &PyAny, data: Vec<u8>) -> PyResult<()> {
-        self.0.add_png_chunk(util::py_str_to_chunk(name)?, data);
+    fn add_png_chunk(&mut self, name: &[u8], data: Vec<u8>) -> PyResult<()> {
+        self.0.add_png_chunk(
+            name.try_into().or(Err(PyValueError::new_err(
+                "Invalid chunk (must be 4 bytes long)",
+            )))?,
+            data,
+        );
         Ok(())
     }
 
@@ -123,9 +116,9 @@ impl RawImage {
     }
 
     #[pyo3(signature = (**kwargs))]
-    fn create_optimized_png(&self, kwargs: Option<&PyDict>) -> PyResult<Cow<[u8]>> {
+    fn create_optimized_png<'a>(&self, kwargs: Option<&Bound<'_, PyDict>>) -> PyResult<Cow<[u8]>> {
         self.0
-            .create_optimized_png(&parse::parse_kw_opts(kwargs)?)
+            .create_optimized_png(&options::parse_kw_opts(kwargs)?)
             .and_then(|data| Ok(data.into()))
             .or_else(error::handle_png_error)
     }
