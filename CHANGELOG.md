@@ -4,6 +4,7 @@
 
 - Support for Python 3.13
 - Upgrade pip dependencies
+- Fixed: Correct fast_evaluation argument in wrapper
 
 ## 9.0.0
 
