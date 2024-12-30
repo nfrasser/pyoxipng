@@ -47,7 +47,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --interpreter 3.8 3.9 3.10 3.11 3.12 3.13
           sccache: "true"
-          manylinux: auto
+          manylinux: 2_17
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
