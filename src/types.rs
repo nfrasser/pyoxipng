@@ -1,6 +1,6 @@
 use ::oxipng as oxi;
 use core::time::Duration;
-use pyo3::exceptions::{PyTypeError, PyValueError};
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
@@ -10,11 +10,13 @@ use std::{
     num::NonZeroU8,
 };
 
+// NOTE: Deprecated as of v9.1
+// Should use sequence or set where appropriate
 #[derive(FromPyObject)]
 pub enum Collection<T: Eq + Hash> {
-    #[pyo3(transparent, annotation = "typing.Sequence[T]")]
+    #[pyo3(transparent, annotation = "list | tuple")]
     Seq(Vec<T>),
-    #[pyo3(transparent, annotation = "set[T] | frozenset[T]")]
+    #[pyo3(transparent, annotation = "set | frozenset")]
     Set(HashSet<T>),
 }
 
@@ -41,7 +43,12 @@ impl<T: Eq + Hash> IntoIterator for Collection<T> {
     fn into_iter(self) -> Self::IntoIter {
         match self {
             Collection::Seq(vec) => CollectionIterator::SeqIter(vec.into_iter()),
-            Collection::Set(set) => CollectionIterator::SetIter(set.into_iter()),
+            Collection::Set(set) => {
+                eprintln!(
+                    "(pyoxipng) Deprecation Warning: Python sets will not be accepted arguments in a future release. Please use a list or tuple instead."
+                );
+                CollectionIterator::SetIter(set.into_iter())
+            }
         }
     }
 }
@@ -53,18 +60,6 @@ impl<T: Eq + Hash> Collection<T> {
         C: FromIterator<U>,
     {
         self.into_iter().map(|i| i.into()).collect()
-    }
-    pub fn try_remap<U, C>(self) -> Result<C, U::Error>
-    where
-        U: TryFrom<T>,
-        C: FromIterator<U>,
-    {
-        let mut iter = self.into_iter().map(|i| U::try_from(i));
-        if let Some(Err(err)) = iter.find(|i| i.is_err()) {
-            Err(err)
-        } else {
-            Ok(iter.flatten().collect())
-        }
     }
 }
 
@@ -148,11 +143,8 @@ impl StripChunks {
     }
 
     #[staticmethod]
-    fn strip(val: Collection<Vec<u8>>) -> PyResult<Self> {
-        let chunks = val
-            .try_remap()
-            .or(Err(PyTypeError::new_err("All chunks must be 4 bytes long")))?;
-        Ok(Self(oxi::StripChunks::Strip(chunks)))
+    fn strip(val: Collection<[u8; 4]>) -> PyResult<Self> {
+        Ok(Self(oxi::StripChunks::Strip(val.remap())))
     }
 
     #[staticmethod]
@@ -161,11 +153,8 @@ impl StripChunks {
     }
 
     #[staticmethod]
-    fn keep(val: Collection<Vec<u8>>) -> PyResult<Self> {
-        let chunks = val.try_remap().or(Err(PyValueError::new_err(
-            "All chunks must be 4 bytes long",
-        )))?;
-        Ok(Self(oxi::StripChunks::Keep(chunks)))
+    fn keep(val: Collection<[u8; 4]>) -> PyResult<Self> {
+        Ok(Self(oxi::StripChunks::Keep(val.remap())))
     }
     #[staticmethod]
     fn all() -> Self {
