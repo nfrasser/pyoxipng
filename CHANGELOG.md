@@ -1,5 +1,16 @@
 # Changelog
 
+## 9.1.0
+
+- Deprecated: options such as `filter` that that previously supported `set`
+  types now expect `Sequence` types such as `list` or `tuple`. Support for `set`
+  will be removed in v10.
+- Dropped build support for old operating systems that reached end-of-life
+- Disable x86, armv7, s390x, ppc64le manylinux pip builds (breaking due to deflate dependency)
+- Update to oxipng 9.1
+- Update build toolchain
+- Refactor internals
+
 ## 9.0.1
 
 - Support for Python 3.13
