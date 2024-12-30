@@ -211,28 +211,28 @@ Create an optimized png from the raw image data using the options provided
 oxipng.optimize("/path/to/image.png", level=6, fix_errors=True, interlace=oxipng.Interlacing.Adam7)
 ```
 
-| Option                 | Description                                                                                                                                | Type                              | Default                   |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------- | ------------------------- |
-| `level`                | Set the optimization level to an integer between 0 and 6 (inclusive)                                                                       | int                               | `2`                       |
-| `fix_errors`           | Attempt to fix errors when decoding the input file rather than throwing `PngError`                                                         | bool                              | `False`                   |
-| `force`                | Write to output even if there was no improvement in compression                                                                            | bool                              | `False`                   |
-| `filter`               | Which filters to try on the file. Use Use enum values from `oxipng.RowFilter`                                                              | set[[RowFilter](#filter)]         | `{RowFilter.NoOp}`        |
-| `interlace`            | Whether to change the interlacing type of the file. `None` will not change current interlacing type                                        | [Interlacing](#interlace) \| None | `None`                    |
-| `optimize_alpha`       | Whether to allow transparent pixels to be altered to improve compression                                                                   | bool                              | `False`                   |
-| `bit_depth_reduction`  | Whether to attempt bit depth reduction                                                                                                     | bool                              | `True`                    |
-| `color_type_reduction` | Whether to attempt color type reduction                                                                                                    | bool                              | `True`                    |
-| `palette_reduction`    | Whether to attempt palette reduction                                                                                                       | bool                              | `True`                    |
-| `grayscale_reduction`  | Whether to attempt grayscale reduction                                                                                                     | bool                              | `True`                    |
-| `idat_recoding`        | If any type of reduction is performed, IDAT recoding will be performed regardless of this setting                                          | bool                              | `True`                    |
-| `scale_16`             | Whether to forcibly reduce 16-bit to 8-bit by scaling                                                                                      | bool                              | `False`                   |
-| `strip`                | Which headers to strip from the PNG file, if any. Specify with `oxipng.StripChunks`                                                        | [StripChunks](#strip)             | `StripChunks.none()`      |
-| `deflate`              | Which DEFLATE algorithm to use. Specify with `oxipng.Deflaters`                                                                            | [Deflaters](#deflate)             | `Deflaters.libdeflater()` |
-| `fast_evaluation`      | Whether to use fast evaluation to pick the best filter                                                                                     | bool                              | `False`                   |
-| `timeout`              | Maximum amount of time to spend (in milliseconds) on optimizations. Further potential optimizations are skipped if the timeout is exceeded | int \| None                       | `None`                    |
+| Option                 | Description                                                                                                                       | Type                              | Default                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------------- |
+| `level`                | Set the optimization level to an integer between 0 and 6 (inclusive)                                                              | int                               | `2`                       |
+| `fix_errors`           | Attempt to fix errors when decoding the input file rather than throwing `PngError`                                                | bool                              | `False`                   |
+| `force`                | Write to output even if there was no improvement in compression                                                                   | bool                              | `False`                   |
+| `filter`               | Which filters to try on the file. Use Use enum values from `oxipng.RowFilter`                                                     | Sequence[[RowFilter](#filter)]    | `[RowFilter.NoOp]`        |
+| `interlace`            | Whether to change the interlacing type of the file. `None` will not change current interlacing type                               | [Interlacing](#interlace) \| None | `None`                    |
+| `optimize_alpha`       | Whether to allow transparent pixels to be altered to improve compression                                                          | bool                              | `False`                   |
+| `bit_depth_reduction`  | Whether to attempt bit depth reduction                                                                                            | bool                              | `True`                    |
+| `color_type_reduction` | Whether to attempt color type reduction                                                                                           | bool                              | `True`                    |
+| `palette_reduction`    | Whether to attempt palette reduction                                                                                              | bool                              | `True`                    |
+| `grayscale_reduction`  | Whether to attempt grayscale reduction                                                                                            | bool                              | `True`                    |
+| `idat_recoding`        | If any type of reduction is performed, IDAT recoding will be performed regardless of this setting                                 | bool                              | `True`                    |
+| `scale_16`             | Whether to forcibly reduce 16-bit to 8-bit by scaling                                                                             | bool                              | `False`                   |
+| `strip`                | Which headers to strip from the PNG file, if any. Specify with `oxipng.StripChunks`                                               | [StripChunks](#strip)             | `StripChunks.none()`      |
+| `deflate`              | Which DEFLATE algorithm to use. Specify with `oxipng.Deflaters`                                                                   | [Deflaters](#deflate)             | `Deflaters.libdeflater()` |
+| `fast_evaluation`      | Whether to use fast evaluation to pick the best filter                                                                            | bool                              | `False`                   |
+| `timeout`              | Maximum amount of time to spend (in seconds) on optimizations. Further potential optimizations skipped if the timeout is exceeded | float \| None                     | `None`                    |
 
 ### filter
 
-Initialize the `filter` set with any of the following `oxipng.RowFilter` enum options:
+Initialize a `filter` list or tuple with any of the following `oxipng.RowFilter` enum options:
 
 - `oxipng.RowFilter.NoOp`
 - `oxipng.RowFilter.Sub`
@@ -255,13 +255,13 @@ Set `interlace` to `None` to keep existing interlacing or to one of following `o
 Initialize the `strip` option with one of the following static methods in the
 `oxipng.StripChunks` class.
 
-| Method                                 | Description                                                                                 |
-| -------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `oxipng.StripChunks.none()`            | None                                                                                        |
-| `oxipng.StripChunks.strip(set[bytes])` | Strip specific chunks                                                                       |
-| `oxipng.StripChunks.safe()`            | Strip chunks that won't affect rendering (all but cICP, iCCP, sRGB, pHYs, acTL, fcTL, fdAT) |
-| `oxipng.StripChunks.keep(set[bytes])`  | Strip all non-critical chunks except these                                                  |
-| `oxipng.StripChunks.all()`             | Strip all non-critical chunks                                                               |
+| Method                                      | Description                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `oxipng.StripChunks.none()`                 | None                                                                                        |
+| `oxipng.StripChunks.strip(Sequence[bytes])` | Strip chunks specified in the given list                                                    |
+| `oxipng.StripChunks.safe()`                 | Strip chunks that won't affect rendering (all but cICP, iCCP, sRGB, pHYs, acTL, fcTL, fdAT) |
+| `oxipng.StripChunks.keep(Sequence[bytes])`  | Strip all non-critical chunks except those in the given list                                |
+| `oxipng.StripChunks.all()`                  | Strip all non-critical chunks                                                               |
 
 ### deflate
 
@@ -301,7 +301,8 @@ Initialize the `deflate` option with one of the following static methods in the
    ```
 1. Format code
    ```
-   black .
+   ruff check .
+   ruff format .
    ```
 
 ## License

@@ -3,12 +3,12 @@ Python wrapper for multithreaded .png image file optimizer oxipng
 (https://github.com/shssoichiro/oxipng - written in Rust). Use this module to
 reduce the file size of your PNG images.
 """
-from typing import Collection, List, Optional, Union
+
+from typing import Optional, Union, Sequence
 from enum import Enum
 from os import PathLike
 
 StrOrBytesPath = Union[str, bytes, PathLike]
-
 
 class PngError(Exception):
     """
@@ -16,7 +16,6 @@ class PngError(Exception):
     """
 
     ...
-
 
 class RowFilter(Enum):
     """
@@ -34,7 +33,6 @@ class RowFilter(Enum):
     BigEnt = ...
     Brute = ...
 
-
 class Interlacing(Enum):
     """
     enum entries for interlace option
@@ -43,32 +41,21 @@ class Interlacing(Enum):
     Off = ...
     Adam7 = ...
 
-
 class StripChunks:
     """
     Initialization class for strip option
     """
 
     @staticmethod
-    def none() -> "StripChunks":
-        ...
-
+    def none() -> "StripChunks": ...
     @staticmethod
-    def strip(val: Collection[bytes]) -> "StripChunks":
-        ...
-
+    def strip(val: Sequence[bytes]) -> "StripChunks": ...
     @staticmethod
-    def safe() -> "StripChunks":
-        ...
-
+    def safe() -> "StripChunks": ...
     @staticmethod
-    def keep(val: Collection[bytes]) -> "StripChunks":
-        ...
-
+    def keep(val: Sequence[bytes]) -> "StripChunks": ...
     @staticmethod
-    def all() -> "StripChunks":
-        ...
-
+    def all() -> "StripChunks": ...
 
 class Deflaters:
     """
@@ -76,31 +63,23 @@ class Deflaters:
     """
 
     @staticmethod
-    def libdeflater(compression: int) -> "Deflaters":
-        ...
-
+    def libdeflater(compression: int) -> "Deflaters": ...
     @staticmethod
-    def zopfli(iterations: int) -> "Deflaters":
-        ...
-
+    def zopfli(iterations: int) -> "Deflaters": ...
 
 class Zopfli:
     """
     Initialize a Zopfli deflate configuration option value
     """
 
-    def __init__(self, iterations: int) -> None:
-        ...
-
+    def __init__(self, iterations: int) -> None: ...
 
 class Libdeflater:
     """
     Initialize a Libdeflater deflate configuration option value
     """
 
-    def __init__(self) -> None:
-        ...
-
+    def __init__(self) -> None: ...
 
 class ColorType:
     """
@@ -115,7 +94,7 @@ class ColorType:
         ...
 
     @staticmethod
-    def rgb(transparent_color: Optional[Collection[int]] = None) -> "ColorType":
+    def rgb(transparent_color: Optional[Sequence[int]] = None) -> "ColorType":
         """
         RGB, with three color channels. Specify optional color value that should
         be rendered as transparent.
@@ -123,7 +102,7 @@ class ColorType:
         ...
 
     @staticmethod
-    def indexed(palette: List[Collection[int]]) -> "ColorType":
+    def indexed(palette: Sequence[Sequence[int]]) -> "ColorType":
         """
         Indexed, with one byte per pixel representing a color from the palette.
         Specify palette containing the colors used, up to 256 entries
@@ -144,7 +123,6 @@ class ColorType:
         """
         ...
 
-
 class RawImage:
     """
     Create an optimized PNG file from raw image data
@@ -158,8 +136,7 @@ class RawImage:
         *,
         color_type: ColorType = ...,
         bit_depth: int = 8,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def add_png_chunk(self, name: bytes, data: Union[bytes, bytearray]) -> None:
         """
@@ -179,7 +156,7 @@ class RawImage:
         level: int = 2,
         fix_errors: bool = False,
         force: bool = False,
-        filter: Collection[RowFilter] = {RowFilter.NoOp},
+        filter: Sequence[RowFilter] = [RowFilter.NoOp],
         interlace: Optional[Interlacing] = None,
         optimize_alpha: bool = False,
         bit_depth_reduction: bool = True,
@@ -199,7 +176,6 @@ class RawImage:
         """
         ...
 
-
 def optimize(
     input: StrOrBytesPath,
     output: Optional[StrOrBytesPath] = ...,
@@ -207,7 +183,7 @@ def optimize(
     level: int = 2,
     fix_errors: bool = False,
     force: bool = False,
-    filter: Collection[RowFilter] = {RowFilter.NoOp},
+    filter: Sequence[RowFilter] = [RowFilter.NoOp],
     interlace: Optional[Interlacing] = None,
     optimize_alpha: bool = False,
     bit_depth_reduction: bool = True,
@@ -227,14 +203,13 @@ def optimize(
     """
     ...
 
-
 def optimize_from_memory(
     data: bytes,
     *,
     level: int = 2,
     fix_errors: bool = False,
     force: bool = False,
-    filter: Collection[RowFilter] = {RowFilter.NoOp},
+    filter: Sequence[RowFilter] = [RowFilter.NoOp],
     interlace: Optional[Interlacing] = None,
     optimize_alpha: bool = False,
     bit_depth_reduction: bool = True,
