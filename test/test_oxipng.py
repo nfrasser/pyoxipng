@@ -53,7 +53,8 @@ def test_optimize_opts(infile):
         infile,
         fix_errors=True,
         force=True,
-        filter={oxipng.RowFilter.Sub, oxipng.RowFilter.Up, oxipng.RowFilter.Average},
+        # NOTE: set args deprecated in v9.1, will change to sequence
+        filter={oxipng.RowFilter.Sub, oxipng.RowFilter.Up, oxipng.RowFilter.Average},  # type: ignore
         interlace=oxipng.Interlacing.Adam7,
         optimize_alpha=True,
         bit_depth_reduction=False,
@@ -97,10 +98,10 @@ def test_strip_chunks():
     with pytest.raises(TypeError):
         assert oxipng.StripChunks.strip(["sRGB", 42])  # type: ignore
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         assert oxipng.StripChunks.keep([b"RGB"])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         assert oxipng.StripChunks.keep([b"RGB123"])
 
 
@@ -148,7 +149,7 @@ def test_color_type():
 
     assert oxipng.ColorType.rgb()
     assert oxipng.ColorType.rgb((0, 0, 0))
-    assert oxipng.ColorType.rgb((65535, 65535, 65535))
+    assert oxipng.ColorType.rgb([65535, 65535, 65535])
 
     with pytest.raises(OverflowError):
         assert oxipng.ColorType.rgb((65535, 65536, 65535))
