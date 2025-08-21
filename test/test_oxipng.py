@@ -64,6 +64,7 @@ def test_optimize_opts(infile):
         scale_16=True,
         strip=oxipng.StripChunks.strip([b"cICP", b"sRGB"]),
         deflate=oxipng.Deflaters.libdeflater(12),
+        fast_evaluation=False,
         timeout=100,
     )
     assert infile.stat().st_size != initial_size
