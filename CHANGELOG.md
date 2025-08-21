@@ -1,5 +1,10 @@
 # Changelog
 
+## 9.1.1
+
+- Updated to latest oxipng 9.1.1
+- Drop Python 3.8 support
+
 ## 9.1.0
 
 - Deprecated: options such as `filter` that that previously supported `set`
