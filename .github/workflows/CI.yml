@@ -150,6 +150,8 @@ jobs:
             target: x64
           - runner: windows-latest
             target: x86
+          - runner: windows-11-arm
+            target: aarch64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -168,7 +170,7 @@ jobs:
           name: wheels-windows-${{ matrix.platform.target }}
           path: dist
       - name: pytest
-        if: ${{ !startsWith(matrix.platform.target, 'aarch64') }}
+        # if: ${{ !startsWith(matrix.platform.target, 'aarch64') }}
         shell: bash
         run: |
           set -e
