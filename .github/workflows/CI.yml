@@ -150,12 +150,15 @@ jobs:
             target: x64
           - runner: windows-latest
             target: x86
+          - runner: windows-11-arm
+            target: aarch64
+            arch: arm64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-          architecture: ${{ matrix.platform.target }}
+          architecture: ${{ matrix.platform.arch || matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -168,7 +171,7 @@ jobs:
           name: wheels-windows-${{ matrix.platform.target }}
           path: dist
       - name: pytest
-        if: ${{ !startsWith(matrix.platform.target, 'aarch64') }}
+        # if: ${{ !startsWith(matrix.platform.target, 'aarch64') }}
         shell: bash
         run: |
           set -e
